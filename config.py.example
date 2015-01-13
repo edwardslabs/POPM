@@ -1,0 +1,9 @@
+HOST = "127.0.0.1"
+PORT = 4500
+SRVNAME = ""
+HOPS = ""
+SRVDESC = ""
+SRVNUM = ""
+EXT = ""
+SRVPASS = ""
+readbuffer = ""
