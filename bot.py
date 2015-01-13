@@ -104,9 +104,3 @@ while 1:
         if(line[0] == "AB" and line[1] == "B" and line[2] == "#proxy"):
             s.send("AK B #proxy %d PSCAA:o\n" % ((int(time.time()))))
             print("W: AK B #proxy %d PSCAA:o" % ((int(time.time()))))
-        if(line[1] == "001"):
-            idandjoin()
-            thread = Thread(target=startloop)
-            thread.start()
-            thread = Thread(target=reconnectloop)
-            thread.start()
