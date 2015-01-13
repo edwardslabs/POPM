@@ -9,8 +9,8 @@ from threading import Thread
 from config import *
 
 def signal_handler(signal, frame):
-    s.send("%sAAA Q :%s\n" % (SRVID, signal))
-    print("[WRITE]: %sAAA Q :%s" % (SRVID, signal))
+    s.send("%sAAA Q :Exiting on signal %s\n" % (SRVID, signal))
+    print("[WRITE]: %sAAA Q :Exiting on signal %s" % (SRVID, signal))
     s.send("%s SQ %s 0 :Exiting on signal %s\n" % (SRVID, SRVNAME, signal))
     print("[WRITE]: %s SQ %s 0 :Exiting on signal %s" % (SRVID, SRVNAME, signal))
     sys.exit(0)
@@ -47,7 +47,16 @@ while 1:
         line=string.split(line)
 
         if(line[0] == "SERVER"):
-            uplinkid = line[6][:2]
+            if uplinkid == line[6][:2]:
+                print "[ERROR][FATAL]: Uplink ID matches POPM ID. Exiting\n"
+                sys.exit(0)
+            else:
+                uplinkid = line[6][:2]
+
+        if(line[1] == "S"):
+            if uplinkid == line[7][:2]:
+                print("[ERROR][FATAL]: Server %s has same ID as POPM. Exiting\n" % (line[2]))
+                sys.exit(0)
 
         if(line[0] == uplinkid and line[1] == "Z"):
             s.send("%s G :%s\n" % (SRVID, SRVNAME))
