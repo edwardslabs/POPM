@@ -57,15 +57,16 @@ def DNSBL(ip, nick):
         try:
             answers = dns.resolver.query(newstring,'A')
             if answers != False:
-                # Gline here #
+                s.send("%s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
+                print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
                 break
         except dns.resolver.NXDOMAIN:
             continue
 
-    http_connect(ip):
+    http_connect(ip)
 
 def http_connect(ip):
-    testhost = "blindsighttf2.net:80"
+    testhost = "blindsighttf2.com:80"
     ports = [80,81,1075,3128,4480,6588,7856,8000,8080,8081,8090,7033,8085,8095,8100,8105,8110,1039,1050,1080,1098,11055,1200,19991,3332,3382,35233,443,444,4471,4480,5000,5490,5634,5800,63000,63809,65506,6588,6654,6661,6663,6664,6665,6667,6668,7070,7868,808,8085,8082,8118,8888,9000,9090,9988]
 
 
