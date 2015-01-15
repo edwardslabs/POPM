@@ -380,7 +380,7 @@ while 1:
             if line[2][:1] == "#":
                 channel = True
                 target = line[0]
-            if(line[3] == ":.threads" and channel is True or channel is False and line[3] == ":threads"):
+            if(line[3].lower() == ":.threads" and channel is True or channel is False and line[3].lower() == ":threads"):
                 if access_level(target) > 750:
                     try:
                         s.send("%sAAA O %s :There are %s threads running\n" % (SERVER_NUMERIC, target, threading.activeCount()))
@@ -391,17 +391,49 @@ while 1:
                 elif access_level(target) <= 749:
                     s.send("%sAAA O %s :You lack access to this command\n" % (SERVER_NUMERIC, target))
                     print("[WRITE]: %sAAA O %s :You lack access to this command" % (SERVER_NUMERIC, target))
-
-            elif(line[3] == ":.help" and channel is True or channel is False and line[3] == ":help"):
+            elif(line[3].lower() == ":.help" and channel is True or channel is False and line[3].lower() == ":help"):
                 if access_level(target) > 0:
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :%s gives authorized users extra control over the proxy monitoring system.\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :General commands:\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :Help:           Shows this\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
-            elif(line[3] == ":.access" and channel is True or channel is False and line[3] == ":access"):
+                    try:
+                        if line[4] != False:
+                            if line[4].lower() == "threads":
+                                s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :THREADS displays the current number of worker threads by %s.\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :These threads are spawned when an incoming connection is recieved\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :to check for proxys on the remote host.\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                            elif line[4].lower() == "access":
+                                s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :ACCESS is a multi-functional command. Access has the ability to\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :check your access with %s, check other's access, add other users to %s\n" % (SERVER_NUMERIC, target, BOT_NAME, BOT_NAME))
+                                s.send("%sAAA O %s :and to remove users access to %s. At this time, only root users may\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :add or remove other users from %s.\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :Note: To remove a users access, set their access to -1\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :Examples:\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :/msg %s ACCESS foobar\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :/msg %s ACCESS *\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :/msg %s ACCESS foo 950\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :/msg %s ACCESS bar -1\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                            elif line[4].lower() == "die":
+                                s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                                s.send("%sAAA O %s :DIE causes %s to quit and POPM to disconnect from %s.\n" % (SERVER_NUMERIC, target, BOT_NAME, NETWORK_NAME))
+                                s.send("%sAAA O %s :This will completly stop the program and will have to\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :be restarted locally. DIE takes arguments for the QUIT message\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :and SQUIT reason. Note: When you use DIE, your :NickServ account\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :name will be attached to the SQUIT message.\n" % (SERVER_NUMERIC, target))
+                                s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                            else:
+                                s.send("%sAAA O %s :%s is an unknown command to me.\n" % (SERVER_NUMERIC, target, line[4]))
+                    except IndexError:
+                        if access_level(target) > 0:
+                            s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                            s.send("%sAAA O %s :%s gives authorized users extra control over the proxy monitoring system.\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                            s.send("%sAAA O %s :General commands:\n" % (SERVER_NUMERIC, target))
+                            s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SERVER_NUMERIC, target))
+                            s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SERVER_NUMERIC, target))
+                            s.send("%sAAA O %s :Die:            Terminates POPM and disconnects from %s\n" % (SERVER_NUMERIC, target, NETWORK_NAME))
+                            s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+            elif(line[3].lower() == ":.access" and channel is True or channel is False and line[3].lower() == ":access"):
                 try:
                     if line[5] != False:
                         try:
@@ -425,3 +457,28 @@ while 1:
                     except IndexError:
                         if access_level(target) > 0:
                             s.send("%sAAA O %s :Account %s has access %s.\n" % (SERVER_NUMERIC, target, get_acc(target), access_level(target)))
+            elif(line[3].lower() == ":.die" and channel is True or channel is False and line[3].lower() == ":die"):
+                try:
+                    if line[4] != False:
+                        arlen = len(line)
+                        newstring = ""
+                        i = 4
+                        while i < arlen:
+                            if newstring == "":
+                                newstring = line[i]
+                            else:
+                                newstring = newstring + " " + line[i]
+                            i += 1
+                        account = get_acc(target)
+                        if access_level(target) >= 900:
+                            s.send("%sAAA Q :%s\n" % (SERVER_NUMERIC, newstring))
+                            print("[WRITE]: %sAAA Q :%s" % (SERVER_NUMERIC, newstring))
+                            s.send("%s SQ %s 0 :[%s (by %s)]\n" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
+                            print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
+                            sys.exit(0)
+                        else:
+                            s.send("%sAAA O %s :You lack access to this command\n" % (SERVER_NUMERIC, target))
+                            print("[WRITE]: %sAAA O %s :You lack access to this command" % (SERVER_NUMERIC, target))
+                except IndexError:
+                    s.send("%sAAA O %s :Insufficient paramaters for DIE\n" % (SERVER_NUMERIC, target))
+                    print("[WRITE]: %sAAA O %s :Insufficient paramaters for DIE" % (SERVER_NUMERIC, target))
