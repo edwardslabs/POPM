@@ -8,6 +8,7 @@ import re
 import datetime
 import dns.resolver
 import httplib
+import psycopg2
 from threading import Thread
 from thread import start_new_thread, allocate_lock
 from config import *
@@ -18,6 +19,81 @@ def signal_handler(signal, frame):
     s.send("%s SQ %s 0 :Exiting on signal %s\n" % (SRVID, SRVNAME, signal))
     print("[WRITE]: %s SQ %s 0 :Exiting on signal %s" % (SRVID, SRVNAME, signal))
     sys.exit(0)
+
+def show_access(target, source):
+    if target == "*":
+        cur.execute("SELECT access,admin FROM users")
+        s.send("%sAAA O %s :Account    Level\n" % (SRVID, source))
+        num = 0
+        for row in cur.fetchall():
+            s.send("%sAAA O %s :%s  %s\n" % (SRVID, source, row[1], row[0]))
+            num += 1
+        s.send("%sAAA O %s :Found %d matches.\n" % (SRVID, source, num))
+    else:
+        cur.execute("SELECT access,admin FROM users WHERE admin = %r" % (target))
+        if cur.rowcount < 1:
+            s.send("%sAAA O %s :Could not find account %s.\n" % (SRVID, source, target))
+        else:
+            for row in cur.fetchall():
+                account = row[1]
+                access = row[0]
+            s.send("%sAAA O %s :Account %s has access %d.\n" % (SRVID, source, account, access))
+
+def update_access(user, level, whodidit):
+    if isinstance(level, int):
+        bywho = get_acc(whodidit)
+        cur.execute("SELECT admin FROM users WHERE admin = %r" % (user))
+        epoch = int(time.time())
+        if cur.rowcount < 1:
+            if level < 0:
+                s.send("%sAAA O %s :Account %s does not exist.\n" % (SRVID, whodidit, user))
+            else:
+                cur.execute("INSERT INTO users (admin,access,added,bywho) VALUES (%r, %r, %r, %r)" % (user, level, epoch, bywho))
+                pgconn.commit()
+                s.send("%sAAA O %s :Account %s has been added with access %d.\n" % (SRVID, whodidit, user, level))
+        else:
+            if level < 0:
+                cur.execute("DELETE FROM users * WHERE admin = %r" % (user))
+                pgconn.commit()
+                s.send("%sAAA O %s :Access for account %s has been deleted.\n" % (SRVID, whodidit, user))
+            else:
+                cur.execute("UPDATE users SET access = %r, bywho = %r, added = %r WHERE admin = %r" % (level, bywho, epoch, user))
+                pgconn.commit()
+                s.send("%sAAA O %s :Account %s has been updated to access %d.\n" % (SRVID, whodidit, user, level))
+    else:
+        s.send("%sAAA O %s :Access levels must be an integer.\n" % (SRVID, whodidit))
+
+def get_acc(numnick):
+    authed = 0
+    access = 0
+    for i in userlist:
+        account = i.split(":")[0]
+        ircnum = i.split(":")[1]
+        if ircnum == numnick:
+            return account
+
+def access_level(numnick):
+    authed = 0
+    access = 0
+    for i in userlist:
+        account = i.split(":")[0]
+        ircnum = i.split(":")[1]
+        if ircnum == numnick:
+            authed += 1
+
+    if authed == 0:
+        s.send("%sAAA O %s :You must first authenticate with NickServ.\n" % (SRVID, numnick))
+    else:
+        cur.execute("SELECT access FROM users WHERE admin = %r" % (account))
+        is_user = 0
+        for row in cur.fetchall():
+            access = row[0]
+            is_user += 1
+        if is_user > 0:
+            return access
+        else:
+            s.send("%sAAA O %s :You must first authenticate with NickServ.\n" % (SRVID, numnick))
+            return False
 
 def isIP(address):
     #Takes a string and returns a status if it matches
@@ -195,6 +271,9 @@ def sockscheck(ip):
         while num_threads > 0:
             pass
 
+pgconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+cur = pgconn.cursor()
+
 signal.signal(signal.SIGINT, signal_handler)
 s=socket.socket()
 s.connect((HOST, PORT))
@@ -256,8 +335,13 @@ while 1:
         # Create our user dictionary #
         if(line[1] == "N"):
             if(":" in line[8]):
-                userlist.append([line[2], line[8].split(":")[0], line[11]])
+                userlist.append("%s:%s" % (line[8].split(":")[0], line[11]))
                 print "[INFO]: New userlist is " + str(userlist)
+
+        # Add users as they authenticate #
+        if(line[1] == "AC"):
+            userlist.append("%s:%s" % (line[3], line[2]))
+            print "[INFO]: New userlist is " + str(userlist)
 
         # Acknowldge the netburst #
         if(line[0] == uplinkid and line[1] == "EB"):
@@ -289,16 +373,55 @@ while 1:
             thread = Thread(target=DNSBL(line[6], line[2]))
             thread.start()
 
-        # Test stuff #
-        if(any(line[0] in i for i in userlist) is True and line[1] == "P" and line[2][:1] == "#"):
-            if(line[3] == ":.threads"):
+        # Commands (efficienize me) #
+        if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (SRVID)):
+            channel = False
+            target = line[0]
+            if line[2][:1] == "#":
+                channel = True
+                target = line[0]
+            if(line[3] == ":.threads" and channel is True or channel is False and line[3] == ":threads"):
+                if access_level(target) > 750:
+                    try:
+                        s.send("%sAAA O %s :There are %s threads running\n" % (SRVID, target, threading.activeCount()))
+                        print("[WRITE]: %sAAA O %s :There are %s threads running" % (SRVID, target, threading.activeCount()))
+                    except NameError:
+                        s.send("%sAAA O %s :There are no threads running\n" % (SRVID, target))
+                        print("[WRITE]: %sAAA O %s :There are no threads running" % (SRVID, target))
+                elif access_level(target) <= 749:
+                    s.send("%sAAA O %s :You lack access to this command\n" % (SRVID, target))
+                    print("[WRITE]: %sAAA O %s :You lack access to this command" % (SRVID, target))
+
+            elif(line[3] == ":.help" and channel is True or channel is False and line[3] == ":help"):
+                if access_level(target) > 0:
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SRVID, target, BOT_NAME))
+                    s.send("%sAAA O %s :%s gives authorized users extra control over the proxy monitoring system.\n" % (SRVID, target, BOT_NAME))
+                    s.send("%sAAA O %s :General commands:\n" % (SRVID, target))
+                    s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SRVID, target))
+                    s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SRVID, target))
+                    s.send("%sAAA O %s :Help:           Shows this\n" % (SRVID, target))
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SRVID, target))
+            elif(line[3] == ":.access" and channel is True or channel is False and line[3] == ":access"):
                 try:
-                    s.send("%sAAA P %s :There are %s threads running\n" % (SRVID, line[2], threading.activeCount()))
-                    print("[WRITE]: %sAAA P %s :There are %s threads running" % (SRVID, line[2], threading.activeCount()))
-                except NameError:
-                    s.send("%sAAA P %s :There are no threads running\n" % (SRVID, line[2]))
-                    print("[WRITE]: %sAAA P %s :There are no threads running" % (SRVID, line[2]))
-            elif(line[3] == ":.help"):
-                s.send("%sAAA O %s :-=-=-=-=-=-= %s Help -=-=-=-=-=-=\n" % (SRVID, line[0], BOT_NAME))
-                s.send("%sAAA O %s :No information available at this time.\n" % (SRVID, line[0]))
-                s.send("%sAAA O %s :-=-=-=-=-=-= End Of Help -=-=-=-=-=-=\n" % (SRVID, line[0]))
+                    if line[5] != False:
+                        try:
+                            access = line[5]
+                            access = int(access)
+                        except ValueError:
+                            s.send("%sAAA O %s :Access level must be an integer.\n" % (SRVID, target))
+                            break
+                        if access_level(target) == 1000:
+                            if access <= 1000:
+                                update_access(line[4], access, target)
+                            else:
+                                s.send("%sAAA O %s :Access must be greater than 1000\n" % (SRVID, target))
+                        else:
+                            s.send("%sAAA O %s :Access modification can only be done via root (1000 access) users.\n" % (SRVID, target))
+                except IndexError:
+                    try:
+                        if line[4] != False:
+                            if access_level(target) > 0:
+                                show_access(line[4], target)
+                    except IndexError:
+                        if access_level(target) > 0:
+                            s.send("%sAAA O %s :Account %s has access %s.\n" % (SRVID, target, get_acc(target), access_level(target)))
