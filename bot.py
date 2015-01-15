@@ -41,118 +41,128 @@ def isIP(address):
 
 
 def DNSBL(ip, nick):
-    bll = ["tor.dan.me.uk", "rbl.efnetrbl.org", "dnsbl.proxybl.org", "dnsbl.dronebl.org", "tor.efnet.org"]
-    if isIP(ip) is False:
-        answers = dns.resolver.query(ip,'A')
-        for server in answers:
-            rawip = server
+    if ENABLE_DNSBL == 0:
+        http_connect(ip)
     else:
-        rawip = ip
+        bll = ["tor.dan.me.uk", "rbl.efnetrbl.org", "dnsbl.proxybl.org", "dnsbl.dronebl.org", "tor.efnet.org"]
+        if isIP(ip) is False:
+            answers = dns.resolver.query(ip,'A')
+            for server in answers:
+                rawip = server
+        else:
+            rawip = ip
 
-    rawip = str(rawip)
-    newip = rawip.split(".")
-    newip = newip[::-1]
-    newip = '.'.join(newip)
+        rawip = str(rawip)
+        newip = rawip.split(".")
+        newip = newip[::-1]
+        newip = '.'.join(newip)
 
-    for blacklist in bll:
-        newstring = newip + "." + blacklist
-        try:
-            answers = dns.resolver.query(newstring,'A')
-            if answers != False:
-                s.send("%s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
-                print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
-                break
-        except dns.resolver.NXDOMAIN:
-            continue
+        for blacklist in bll:
+            newstring = newip + "." + blacklist
+            try:
+                answers = dns.resolver.query(newstring,'A')
+                if answers != False:
+                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
+                    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
+                    break
+            except dns.resolver.NXDOMAIN:
+                continue
 
-    http_connect(ip)
+        http_connect(ip)
 
 num_threads = 0
 thread_started = False
 lock = allocate_lock()
 contrue = 0
 def http_connect(ip):
-    global num_threads, thread_started, contrue
-    testhost = "blindsighttf2.com:80"
-    ports = [80,81,1075,3128,4480,6588,7856,8000,8080,8081,8090,7033,8085,8095,8100,8105,8110,1039,1050,1080,1098,11055,1200,19991,3332,3382,35233,443,444,4471,4480,5000,5490,5634,5800,63000,63809,65506,6588,6654,6661,6663,6664,6665,6667,6668,7070,7868,808,8085,8082,8118,8888,9000,9090,9988]
-
-    def http_connect_threads(ip, port):
+    if ENABLE_HTTP == 0:
+        sockscheck(ip, port)
+    else:
         global num_threads, thread_started, contrue
-        lock.acquire()
-        num_threads += 1
-        thread_started = True
-        lock.release()
-        tcp=socket.socket()
-        tcp.settimeout(2)
-        portbuf = ""
-        try:
-            tcp.connect((ip, port))
-            tcp.send("CONNECT %s HTTP/1.0\r\n\r\n" % (ip))
-            #print "[~~~MADE IT PAST TRY~~~]"
-            inttime1 = int(time.time())
-            inttime2 = int(time.time())
-            while inttime2 - inttime1 < 2:
+        testhost = "blindsighttf2.com:80"
+        ports = [80,81,1075,3128,4480,6588,7856,8000,8080,8081,8090,7033,8085,8095,8100,8105,8110,1039,1050,1080,1098,11055,1200,19991,3332,3382,35233,443,444,4471,4480,5000,5490,5634,5800,63000,63809,65506,6588,6654,6661,6663,6664,6665,6667,6668,7070,7868,808,8085,8082,8118,8888,9000,9090,9988]
+
+        def http_connect_threads(ip, port):
+            global num_threads, thread_started, contrue
+            lock.acquire()
+            num_threads += 1
+            thread_started = True
+            lock.release()
+            tcp=socket.socket()
+            tcp.settimeout(2)
+            portbuf = ""
+            try:
+                tcp.connect((ip, port))
+                tcp.send("CONNECT %s HTTP/1.0\r\n\r\n" % (ip))
+                #print "[~~~MADE IT PAST TRY~~~]"
+                inttime1 = int(time.time())
                 inttime2 = int(time.time())
-                data = tcp.recv(1024)
-                if data is not False and "HTTP/1.0 200 OK" in data:
-                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
-                    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
-                    contrue += 1
-                    tcp.close()
-                    break
-        except socket.error, v:
-            #print "[CONNERR (%s) %s]" % (port, v)
-            pass
-        lock.acquire()
-        num_threads -= 1
-        lock.release()
+                while inttime2 - inttime1 < 2:
+                    inttime2 = int(time.time())
+                    data = tcp.recv(1024)
+                    if data is not False and "HTTP/1.0 200 OK" in data:
+                        s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        contrue += 1
+                        tcp.close()
+                        break
+            except socket.error, v:
+                #print "[CONNERR (%s) %s]" % (port, v)
+                pass
+            lock.acquire()
+            num_threads -= 1
+            lock.release()
 
-    def https_connect_threads(ip, port):
-        global num_threads, thread_started, contrue
-        lock.acquire()
-        num_threads += 1
-        thread_started = True
-        lock.release()
+        def https_connect_threads(ip, port):
+            global num_threads, thread_started, contrue
+            lock.acquire()
+            num_threads += 1
+            thread_started = True
+            lock.release()
 
-        tcps=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        ssl_sock = ssl.wrap_socket(tcps)
+            tcps=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            ssl_sock = ssl.wrap_socket(tcps)
 
-        ssl_sock.settimeout(2)
-        portbuf = ""
-        try:
-            ssl_sock.connect((ip, port))
-            ssl_sock.send("CONNECT %s HTTP/1.0\r\n\r\n" % (ip))
-            #print "[~~~SSL MADE IT PAST TRY~~~]"
-            inttime1 = int(time.time())
-            inttime2 = int(time.time())
-            while inttime2 - inttime1 < 2:
+            ssl_sock.settimeout(2)
+            portbuf = ""
+            try:
+                ssl_sock.connect((ip, port))
+                ssl_sock.send("CONNECT %s HTTP/1.0\r\n\r\n" % (ip))
+                #print "[~~~SSL MADE IT PAST TRY~~~]"
+                inttime1 = int(time.time())
                 inttime2 = int(time.time())
-                data = ssl_sock.recv(1024)
-                if data is not False and "HTTP/1.0 200 OK" in data:
-                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
-                    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
-                    contrue += 1
-                    ssl_sock.close()
-                    break
-        except socket.error, v:
-            #print "[SSL CONNERR (%s) %s]" % (port, v)
+                while inttime2 - inttime1 < 2:
+                    inttime2 = int(time.time())
+                    data = ssl_sock.recv(1024)
+                    if data is not False and "HTTP/1.0 200 OK" in data:
+                        s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        contrue += 1
+                        ssl_sock.close()
+                        break
+            except socket.error, v:
+                #print "[SSL CONNERR (%s) %s]" % (port, v)
+                pass
+            lock.acquire()
+            num_threads -= 1
+            lock.release()
+
+        for newport in ports:
+            start_new_thread(http_connect_threads, (ip, newport, ))
+            start_new_thread(https_connect_threads, (ip, newport, ))
+
+        while not thread_started:
             pass
-        lock.acquire()
-        num_threads -= 1
-        lock.release()
+        while num_threads > 0:
+            pass
 
-    for newport in ports:
-        start_new_thread(http_connect_threads, (ip, newport, ))
-        start_new_thread(https_connect_threads, (ip, newport, ))
+        if str(contrue) == "0" or contrue is None:
+            print "Moving on to socks!"
+            sockscheck(ip)
 
-    while not thread_started:
-        pass
-    while num_threads > 0:
-        pass
-
-    if num_threads == 0 and contrue == 0:
-        print "No http_connect detected while threads are %d" % (num_threads)
-
+def sockscheck(ip):
+    if ENABLE_SOCKS != 0:
+        ports = [1080,1075,10000,10080,10099,10130,10242,10777,1025,1026,1027,1028,1029,1030,1031,1032,1033,1039,1050,1066,1081,1098,11011,11022,11033,11055,11171,1122,11225,1180,1182,1200,1202,1212,1234,12654,1337,14841,16591,17327,1813,18888,1978,1979,19991,2000,21421,22277,2280,24971,24973,25552,25839,26905,28882,29992,3127,3128,32167,3330,3380,34610,3801,3867,40,4044,41080,41379,43073,43341,443,44548,4471,43371,44765,4914,49699,5353,559,58,6000,62385,63808,6551,6561,6664,6748,6969,7007,7080,8002,8009,8020,8080,8085,8111,8278,8751,8888,9090,9100,9988,9999,59175,5001,19794]
 
 signal.signal(signal.SIGINT, signal_handler)
 s=socket.socket()
@@ -163,12 +173,12 @@ s.send("PASS %s\n" % (SRVPASS))
 print("[WRITE]: PASS %s" % (SRVPASS))
 s.send("SERVER %s %s %d %d J10 %s]]] :%s\n" % (SRVNAME, HOPS, boot_time, boot_time, SRVID, SRVDESC))
 print("[WRITE]: SERVER %s %s %d %d J10 %s]]] :%s" % (SRVNAME, HOPS, boot_time, boot_time, SRVID, SRVDESC))
-s.send("%s N ProxyServ 1 %d ProxyServ services.gamesurge.net +oik AAAAAA %sAAA :Proxy Monitor Service\n" % (SRVID, boot_time, SRVID))
-print("[WRITE]: %s N ProxyServ 1 %d ProxyServ services.gamesurge.net +oik AAAAAA %sAAA :Proxy Monitor Service" % (SRVID, boot_time, SRVID))
-s.send("%s B #proxy %d %sAAA:o\n" % (SRVID, int(time.time()), SRVID))
-print("[WRITE]: %s B #proxy %d ADAAA:o" % (SRVID, int(time.time())))
-s.send("%sAAA M #proxy +o %sAAA %d\n" % (SRVID, SRVID, int(time.time())))
-print("[WRITE]: %sAAA M #proxy +o %sAAA %d" % (SRVID, SRVID, int(time.time())))
+s.send("%s N %s 1 %d %s services.gamesurge.net +oik AAAAAA %sAAA :Proxy Monitor Service\n" % (SRVID, BOT_NAME, boot_time, BOT_NAME, SRVID))
+print("[WRITE]: %s N %s 1 %d %s services.gamesurge.net +oik AAAAAA %sAAA :Proxy Monitor Service" % (SRVID, BOT_NAME, boot_time, SRVID, BOT_NAME))
+s.send("%s B %s %d %sAAA:o\n" % (SRVID, int(time.time()), DEBUG_CHANNEL, SRVID))
+print("[WRITE]: %s B %s %d %sAAA:o" % (SRVID, DEBUG_CHANNEL, int(time.time()), SRVID))
+s.send("%sAAA M %s +o %sAAA %d\n" % (SRVID, DEBUG_CHANNEL, SRVID, int(time.time())))
+print("[WRITE]: %sAAA M %s +o %sAAA %d" % (SRVID, DEBUG_CHANNEL, SRVID, int(time.time())))
 s.send("%s EB\n" % (SRVID))
 print("[WRITE]: %s EB" % (SRVID))
 
@@ -247,3 +257,17 @@ while 1:
         if(line[1] == "N" and complete == 1):
             thread = Thread(target=DNSBL(line[6], line[2]))
             thread.start()
+
+        # Test stuff #
+        if(any(line[0] in i for i in userlist) is True and line[1] == "P" and line[2][:1] == "#"):
+            if(line[3] == ":.threads"):
+                try:
+                    s.send("%sAAA P %s :There are %s threads running\n" % (SRVID, line[2], threading.activeCount()))
+                    print("[WRITE]: %sAAA P %s :There are %s threads running" % (SRVID, line[2], threading.activeCount()))
+                except NameError:
+                    s.send("%sAAA P %s :There are no threads running\n" % (SRVID, line[2]))
+                    print("[WRITE]: %sAAA P %s :There are no threads running" % (SRVID, line[2]))
+            elif(line[3] == ":.help"):
+                s.send("%sAAA O %s :-=-=-=-=-=-= %s Help -=-=-=-=-=-=\n" % (SRVID, line[0], BOT_NAME))
+                s.send("%sAAA O %s :No information available\n" % (SRVID, line[0]))
+                s.send("%sAAA O %s :-=-=-=-=-=-= End Of Help -=-=-=-=-=-=\n" % (SRVID, line[0]))
