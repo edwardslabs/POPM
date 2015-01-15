@@ -15,6 +15,3 @@ DB_NAME = "popm"
 DB_USER = "popm"
 DB_HOST = "localhost"
 DB_PASS = "somepass"
-ENABLE_DNSBL = 1
-ENABLE_HTTP = 1
-ENABLE_SOCKS = 1

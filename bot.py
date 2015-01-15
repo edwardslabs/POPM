@@ -39,6 +39,96 @@ def show_access(target, source):
                 access = row[0]
             s.send("%sAAA O %s :Account %s has access %d.\n" % (SERVER_NUMERIC, source, account, access))
 
+def get_level_req(param):
+    if param == "access_set":
+        cur.execute("SELECT access_set FROM settings")
+        level = 0
+        for row in cur.fetchall():
+            level = row[0]
+        return level
+    elif param == "setters":
+        cur.execute("SELECT access_set FROM settings")
+        level = 0
+        for row in cur.fetchall():
+            level = row[0]
+        return level
+
+def is_settable(param):
+    if param.lower() == "dnsbl" or param.lower() == "http" or param.lower() == "socks" or param.lower() == "die" or param.lower() == "set" or param.lower() == "setters" or param.lower() == "http_connect":
+        return True
+    return False
+
+def get_set(target):
+    cur.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")
+    s.send("%sAAA O %s :Current configuration settings:\n" % (SERVER_NUMERIC, target))
+    for row in cur.fetchall():
+        s.send("%sAAA O %s :DNSBL Scans:                   %s\n" % (SERVER_NUMERIC, target, row[0]))
+        s.send("%sAAA O %s :HTTP_CONNECT Scans:     %s\n" % (SERVER_NUMERIC, target, row[1]))
+        s.send("%sAAA O %s :SOCKS Scans:                   %s\n" % (SERVER_NUMERIC, target, row[2]))
+        s.send("%sAAA O %s :Die access:                        %s\n" % (SERVER_NUMERIC, target, row[3]))
+        s.send("%sAAA O %s :Setters level:                     %s\n" % (SERVER_NUMERIC, target, row[4]))
+    s.send("%sAAA O %s :End of configuration.\n" % (SERVER_NUMERIC, target))
+
+def update_settings(param, newlevel, target):
+    newlevel = int(newlevel)
+    if param == "dnsbl":
+        param = "enable_dnsbl"
+        fancy = "DNSBL Scans"
+    elif param == "http" or param == "http_connect":
+        param = "enable_http"
+        fancy = "HTTP_CONNECT Scans"
+    elif param == "socks":
+        param = "enable_socks"
+        fancy = "SOCKS Scans"
+    elif param == "die":
+        param = "access_die"
+        fancy = "Die access"
+    elif param == "set" or param == "setters":
+        param = "access_set"
+        fancy = "Setters"
+
+    if param == "enable_dnsbl" or param == "enable_socks" or param == "enable_http":
+        if newlevel > 1 or newlevel < 0:
+            s.send("%sAAA O %s :%s must be either ON or OFF.\n" % (SERVER_NUMERIC, target, fancy))
+        else:
+             if newlevel == 1:
+                 newlevel = True
+                 fancyonoff = "on"
+             else:
+                 newlevel = False
+                 fancyonoff = "off"
+             cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
+             pgconn.commit()
+             print "Updated settings"
+             s.send("%sAAA O %s :%s has been set to %s.\n" % (SERVER_NUMERIC, target, fancy, fancyonoff))
+    else:
+         cur.execute("UPDATE settings SET %s = %d" % (param, newlevel))
+         pgconn.commit()
+         print "Updated settings"
+         s.send("%sAAA O %s :%s has been set to %s\n" % (SERVER_NUMERIC, target, fancy, newlevel))
+
+
+def get_set_value(param, target):
+    if param == "dnsbl":
+        param = "enable_dnsbl"
+        fancy = "DNSBL Scans"
+    elif param == "http" or param == "http_connect":
+        param = "enable_http"
+        fancy = "HTTP_CONNECT Scans"
+    elif param == "socks":
+        param = "enable_socks"
+        fancy = "SOCKS Scans"
+    elif param == "die":
+        param = "access_die"
+        fancy = "Die access"
+    elif param == "set" or param == "setters":
+        param = "access_set"
+        fancy = "Setters"
+    cur.execute("SELECT %s FROM settings" % (param))
+    for row in cur.fetchall():
+        s.send("%sAAA O %s :%s is set to %s\n" % (SERVER_NUMERIC, target, fancy, row[0]))
+
+
 def update_access(user, level, whodidit):
     if isinstance(level, int):
         bywho = get_acc(whodidit)
@@ -274,6 +364,18 @@ def sockscheck(ip):
 pgconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
 cur = pgconn.cursor()
 
+# Have cursor dedicated for settings look ups #
+pgconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+curauto = pgconnauto.cursor()
+
+curauto.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")
+for row in curauto.fetchall():
+    ENABLE_DNSBL = row[0]
+    ENABLE_HTTP = row[1]
+    ENABLE_SOCKS = row[2]
+    ACCESS_DIE = row[3]
+    ACCESS_SET = row[4]
+
 signal.signal(signal.SIGINT, signal_handler)
 s=socket.socket()
 s.connect((HOST, PORT))
@@ -379,6 +481,7 @@ while 1:
             target = line[0]
             if line[2][:1] == "#":
                 channel = True
+                channel_target = line[2]
                 target = line[0]
             if(line[3].lower() == ":.threads" and channel is True or channel is False and line[3].lower() == ":threads"):
                 if access_level(target) > 750:
@@ -431,6 +534,7 @@ while 1:
                             s.send("%sAAA O %s :General commands:\n" % (SERVER_NUMERIC, target))
                             s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SERVER_NUMERIC, target))
                             s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SERVER_NUMERIC, target))
+                            s.send("%sAAA O %s :Set:            Sets the configuration for POPM\n" % (SERVER_NUMERIC, target))
                             s.send("%sAAA O %s :Die:            Terminates POPM and disconnects from %s\n" % (SERVER_NUMERIC, target, NETWORK_NAME))
                             s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
             elif(line[3].lower() == ":.access" and channel is True or channel is False and line[3].lower() == ":access"):
@@ -482,3 +586,33 @@ while 1:
                 except IndexError:
                     s.send("%sAAA O %s :Insufficient paramaters for DIE\n" % (SERVER_NUMERIC, target))
                     print("[WRITE]: %sAAA O %s :Insufficient paramaters for DIE" % (SERVER_NUMERIC, target))
+            elif(line[3].lower() == ":.set" and channel is True or channel is False and line[3].lower() == ":set"):
+                try:
+                    if line[4] != False:
+                        if access_level(target) >= get_level_req("access_set"):
+                            if is_settable(line[4]) is True:
+                                try:
+                                    if line[5] != False:
+                                        try:
+                                            newlevel = line[5]
+                                            if newlevel.lower() == "on":
+                                                newlevel = 1
+                                            elif newlevel.lower() == "off":
+                                                newlevel = 0
+                                            else:
+                                                newlevel = int(newlevel)
+                                        except ValueError:
+                                            s.send("%sAAA O %s :Paramater must be an integer.\n" % (SERVER_NUMERIC, target))
+                                        if newlevel <= 1000 and newlevel >= 0:
+                                            update_settings(line[4], newlevel, target)
+                                        else:
+                                            s.send("%sAAA O %s :Paramater must be an integer between 0 and 1000\n" % (SERVER_NUMERIC, target))
+                                except IndexError:
+                                    get_set_value(line[4], target)
+                            else:
+                                s.send("%sAAA O %s :Invalid SET option.\n" % (SERVER_NUMERIC, target))
+                        else:
+                            s.send("%sAAA O %s :Insufficient access.\n" % (SERVER_NUMERIC, target))
+                except IndexError:
+                    if access_level(target) >= get_level_req("setters"):
+                        get_set(target)
