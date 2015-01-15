@@ -14,30 +14,30 @@ from thread import start_new_thread, allocate_lock
 from config import *
 
 def signal_handler(signal, frame):
-    s.send("%sAAA Q :Exiting on signal %s\n" % (SRVID, signal))
-    print("[WRITE]: %sAAA Q :Exiting on signal %s" % (SRVID, signal))
-    s.send("%s SQ %s 0 :Exiting on signal %s\n" % (SRVID, SRVNAME, signal))
-    print("[WRITE]: %s SQ %s 0 :Exiting on signal %s" % (SRVID, SRVNAME, signal))
+    s.send("%sAAA Q :Exiting on signal %s\n" % (SERVER_NUMERIC, signal))
+    print("[WRITE]: %sAAA Q :Exiting on signal %s" % (SERVER_NUMERIC, signal))
+    s.send("%s SQ %s 0 :Exiting on signal %s\n" % (SERVER_NUMERIC, SERVER_HOST_NAME, signal))
+    print("[WRITE]: %s SQ %s 0 :Exiting on signal %s" % (SERVER_NUMERIC, SERVER_HOST_NAME, signal))
     sys.exit(0)
 
 def show_access(target, source):
     if target == "*":
         cur.execute("SELECT access,admin FROM users")
-        s.send("%sAAA O %s :Account    Level\n" % (SRVID, source))
+        s.send("%sAAA O %s :Account    Level\n" % (SERVER_NUMERIC, source))
         num = 0
         for row in cur.fetchall():
-            s.send("%sAAA O %s :%s  %s\n" % (SRVID, source, row[1], row[0]))
+            s.send("%sAAA O %s :%s  %s\n" % (SERVER_NUMERIC, source, row[1], row[0]))
             num += 1
-        s.send("%sAAA O %s :Found %d matches.\n" % (SRVID, source, num))
+        s.send("%sAAA O %s :Found %d matches.\n" % (SERVER_NUMERIC, source, num))
     else:
         cur.execute("SELECT access,admin FROM users WHERE admin = %r" % (target))
         if cur.rowcount < 1:
-            s.send("%sAAA O %s :Could not find account %s.\n" % (SRVID, source, target))
+            s.send("%sAAA O %s :Could not find account %s.\n" % (SERVER_NUMERIC, source, target))
         else:
             for row in cur.fetchall():
                 account = row[1]
                 access = row[0]
-            s.send("%sAAA O %s :Account %s has access %d.\n" % (SRVID, source, account, access))
+            s.send("%sAAA O %s :Account %s has access %d.\n" % (SERVER_NUMERIC, source, account, access))
 
 def update_access(user, level, whodidit):
     if isinstance(level, int):
@@ -46,22 +46,22 @@ def update_access(user, level, whodidit):
         epoch = int(time.time())
         if cur.rowcount < 1:
             if level < 0:
-                s.send("%sAAA O %s :Account %s does not exist.\n" % (SRVID, whodidit, user))
+                s.send("%sAAA O %s :Account %s does not exist.\n" % (SERVER_NUMERIC, whodidit, user))
             else:
                 cur.execute("INSERT INTO users (admin,access,added,bywho) VALUES (%r, %r, %r, %r)" % (user, level, epoch, bywho))
                 pgconn.commit()
-                s.send("%sAAA O %s :Account %s has been added with access %d.\n" % (SRVID, whodidit, user, level))
+                s.send("%sAAA O %s :Account %s has been added with access %d.\n" % (SERVER_NUMERIC, whodidit, user, level))
         else:
             if level < 0:
                 cur.execute("DELETE FROM users * WHERE admin = %r" % (user))
                 pgconn.commit()
-                s.send("%sAAA O %s :Access for account %s has been deleted.\n" % (SRVID, whodidit, user))
+                s.send("%sAAA O %s :Access for account %s has been deleted.\n" % (SERVER_NUMERIC, whodidit, user))
             else:
                 cur.execute("UPDATE users SET access = %r, bywho = %r, added = %r WHERE admin = %r" % (level, bywho, epoch, user))
                 pgconn.commit()
-                s.send("%sAAA O %s :Account %s has been updated to access %d.\n" % (SRVID, whodidit, user, level))
+                s.send("%sAAA O %s :Account %s has been updated to access %d.\n" % (SERVER_NUMERIC, whodidit, user, level))
     else:
-        s.send("%sAAA O %s :Access levels must be an integer.\n" % (SRVID, whodidit))
+        s.send("%sAAA O %s :Access levels must be an integer.\n" % (SERVER_NUMERIC, whodidit))
 
 def get_acc(numnick):
     authed = 0
@@ -82,7 +82,7 @@ def access_level(numnick):
             authed += 1
 
     if authed == 0:
-        s.send("%sAAA O %s :You must first authenticate with NickServ.\n" % (SRVID, numnick))
+        s.send("%sAAA O %s :You must first authenticate with NickServ.\n" % (SERVER_NUMERIC, numnick))
     else:
         cur.execute("SELECT access FROM users WHERE admin = %r" % (account))
         is_user = 0
@@ -92,7 +92,7 @@ def access_level(numnick):
         if is_user > 0:
             return access
         else:
-            s.send("%sAAA O %s :You must first authenticate with NickServ.\n" % (SRVID, numnick))
+            s.send("%sAAA O %s :You must first authenticate with NickServ.\n" % (SERVER_NUMERIC, numnick))
             return False
 
 def isIP(address):
@@ -139,8 +139,8 @@ def DNSBL(ip, nick):
             try:
                 answers = dns.resolver.query(newstring,'A')
                 if answers != False:
-                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
-                    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SRVID, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
+                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SERVER_NUMERIC, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
+                    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SERVER_NUMERIC, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
                     break
             except dns.resolver.NXDOMAIN:
                 continue
@@ -178,8 +178,8 @@ def http_connect(ip):
                     inttime2 = int(time.time())
                     data = tcp.recv(1024)
                     if data is not False and "HTTP/1.0 200 OK" in data:
-                        s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
-                        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SERVER_NUMERIC, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
                         contrue += 1
                         tcp.close()
                         break
@@ -212,8 +212,8 @@ def http_connect(ip):
                     inttime2 = int(time.time())
                     data = ssl_sock.recv(1024)
                     if data is not False and "HTTP/1.0 200 OK" in data:
-                        s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
-                        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SERVER_NUMERIC, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
                         contrue += 1
                         ssl_sock.close()
                         break
@@ -252,8 +252,8 @@ def sockscheck(ip):
             try:
                 check.connect()
                 if check != False:
-                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks/%s]\n" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
-                    print("[WRITE][SOCKS]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks/%s]" % (SRVID, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks/%s]\n" % (SERVER_NUMERIC, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
+                    print("[WRITE][SOCKS]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks/%s]" % (SERVER_NUMERIC, ip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, port))
                     contrue += 1
                     check.close()
             except socket.error, v:
@@ -279,18 +279,18 @@ s=socket.socket()
 s.connect((HOST, PORT))
 boot_time = int(time.time())
 
-s.send("PASS %s\n" % (SRVPASS))
-print("[WRITE]: PASS %s" % (SRVPASS))
-s.send("SERVER %s %s %d %d J10 %s]]] :%s\n" % (SRVNAME, HOPS, boot_time, boot_time, SRVID, SRVDESC))
-print("[WRITE]: SERVER %s %s %d %d J10 %s]]] :%s" % (SRVNAME, HOPS, boot_time, boot_time, SRVID, SRVDESC))
-s.send("%s N %s 1 %d %s services.gamesurge.net +oik AAAAAA %sAAA :Proxy Monitor Service\n" % (SRVID, BOT_NAME, boot_time, BOT_NAME, SRVID))
-print("[WRITE]: %s N %s 1 %d %s services.gamesurge.net +oik AAAAAA %sAAA :Proxy Monitor Service" % (SRVID, BOT_NAME, boot_time, SRVID, BOT_NAME))
-s.send("%s B %s %d %sAAA:o\n" % (SRVID, DEBUG_CHANNEL, int(time.time()), SRVID))
-print("[WRITE]: %s B %s %d %sAAA:o" % (SRVID, DEBUG_CHANNEL, int(time.time()), SRVID))
-s.send("%sAAA M %s +o %sAAA %d\n" % (SRVID, DEBUG_CHANNEL, SRVID, int(time.time())))
-print("[WRITE]: %sAAA M %s +o %sAAA %d" % (SRVID, DEBUG_CHANNEL, SRVID, int(time.time())))
-s.send("%s EB\n" % (SRVID))
-print("[WRITE]: %s EB" % (SRVID))
+s.send("PASS %s\n" % (SERVER_PASS))
+print("[WRITE]: PASS %s" % (SERVER_PASS))
+s.send("SERVER %s %s %d %d J10 %s]]] :%s\n" % (SERVER_HOST_NAME, HOPS, boot_time, boot_time, SERVER_NUMERIC, SERVER_DESCRIPTION))
+print("[WRITE]: SERVER %s %s %d %d J10 %s]]] :%s" % (SERVER_HOST_NAME, HOPS, boot_time, boot_time, SERVER_NUMERIC, SERVER_DESCRIPTION))
+s.send("%s N %s 1 %d %s %s %s AAAAAA %sAAA :%s\n" % (SERVER_NUMERIC, BOT_NAME, boot_time, BOT_NAME, BOT_HOST, BOT_MODE, SERVER_NUMERIC, BOT_DESC))
+print("[WRITE]: %s N %s 1 %d %s %s %s AAAAAA %sAAA :%s" % (SERVER_NUMERIC, BOT_NAME, boot_time, SERVER_NUMERIC, BOT_HOST, BOT_MODE, BOT_NAME, BOT_DESC))
+s.send("%s B %s %d %sAAA:o\n" % (SERVER_NUMERIC, DEBUG_CHANNEL, int(time.time()), SERVER_NUMERIC))
+print("[WRITE]: %s B %s %d %sAAA:o" % (SERVER_NUMERIC, DEBUG_CHANNEL, int(time.time()), SERVER_NUMERIC))
+s.send("%sAAA M %s +o %sAAA %d\n" % (SERVER_NUMERIC, DEBUG_CHANNEL, SERVER_NUMERIC, int(time.time()))) # Unless our server is U-Lined, this won't work #
+print("[WRITE]: %sAAA M %s +o %sAAA %d" % (SERVER_NUMERIC, DEBUG_CHANNEL, SERVER_NUMERIC, int(time.time())))
+s.send("%s EB\n" % (SERVER_NUMERIC))
+print("[WRITE]: %s EB" % (SERVER_NUMERIC))
 
 readbuffer = ""
 try:
@@ -345,8 +345,8 @@ while 1:
 
         # Acknowldge the netburst #
         if(line[0] == uplinkid and line[1] == "EB"):
-            s.send("%s EA\n" % (SRVID))
-            print("[WRITE]: %s EA" % (SRVID))
+            s.send("%s EA\n" % (SERVER_NUMERIC))
+            print("[WRITE]: %s EA" % (SERVER_NUMERIC))
             complete = 1
 
         # Check for ID collisons #
@@ -357,11 +357,11 @@ while 1:
 
         # Keep alive stuff #
         if(line[0] == uplinkid and line[1] == "Z"):
-            s.send("%s G :%s\n" % (SRVID, SRVNAME))
-            print("[WRITE]: %s G :%s" % (SRVID, SRVNAME))
+            s.send("%s G :%s\n" % (SERVER_NUMERIC, SERVER_HOST_NAME))
+            print("[WRITE]: %s G :%s" % (SERVER_NUMERIC, SERVER_HOST_NAME))
         if(line[0] == uplinkid and line[1] == "G"):
-            s.send("%s Z %s %s 0 %s\n" % (SRVID, SRVNAME, line[2][1:], line[4]))
-            print("[WRITE]: %s Z %s %s 0 %s" % (SRVID, SRVNAME, line[2][1:], line[4]))
+            s.send("%s Z %s %s 0 %s\n" % (SERVER_NUMERIC, SERVER_HOST_NAME, line[2][1:], line[4]))
+            print("[WRITE]: %s Z %s %s 0 %s" % (SERVER_NUMERIC, SERVER_HOST_NAME, line[2][1:], line[4]))
 
         # If we were squit, then abandon ship #
         if(line[1] == "SQ" and line[2] == uplinkname):
@@ -374,7 +374,7 @@ while 1:
             thread.start()
 
         # Commands (efficienize me) #
-        if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (SRVID)):
+        if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (SERVER_NUMERIC)):
             channel = False
             target = line[0]
             if line[2][:1] == "#":
@@ -383,24 +383,24 @@ while 1:
             if(line[3] == ":.threads" and channel is True or channel is False and line[3] == ":threads"):
                 if access_level(target) > 750:
                     try:
-                        s.send("%sAAA O %s :There are %s threads running\n" % (SRVID, target, threading.activeCount()))
-                        print("[WRITE]: %sAAA O %s :There are %s threads running" % (SRVID, target, threading.activeCount()))
+                        s.send("%sAAA O %s :There are %s threads running\n" % (SERVER_NUMERIC, target, threading.activeCount()))
+                        print("[WRITE]: %sAAA O %s :There are %s threads running" % (SERVER_NUMERIC, target, threading.activeCount()))
                     except NameError:
-                        s.send("%sAAA O %s :There are no threads running\n" % (SRVID, target))
-                        print("[WRITE]: %sAAA O %s :There are no threads running" % (SRVID, target))
+                        s.send("%sAAA O %s :There are no threads running\n" % (SERVER_NUMERIC, target))
+                        print("[WRITE]: %sAAA O %s :There are no threads running" % (SERVER_NUMERIC, target))
                 elif access_level(target) <= 749:
-                    s.send("%sAAA O %s :You lack access to this command\n" % (SRVID, target))
-                    print("[WRITE]: %sAAA O %s :You lack access to this command" % (SRVID, target))
+                    s.send("%sAAA O %s :You lack access to this command\n" % (SERVER_NUMERIC, target))
+                    print("[WRITE]: %sAAA O %s :You lack access to this command" % (SERVER_NUMERIC, target))
 
             elif(line[3] == ":.help" and channel is True or channel is False and line[3] == ":help"):
                 if access_level(target) > 0:
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SRVID, target, BOT_NAME))
-                    s.send("%sAAA O %s :%s gives authorized users extra control over the proxy monitoring system.\n" % (SRVID, target, BOT_NAME))
-                    s.send("%sAAA O %s :General commands:\n" % (SRVID, target))
-                    s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SRVID, target))
-                    s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SRVID, target))
-                    s.send("%sAAA O %s :Help:           Shows this\n" % (SRVID, target))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SRVID, target))
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                    s.send("%sAAA O %s :%s gives authorized users extra control over the proxy monitoring system.\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                    s.send("%sAAA O %s :General commands:\n" % (SERVER_NUMERIC, target))
+                    s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SERVER_NUMERIC, target))
+                    s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SERVER_NUMERIC, target))
+                    s.send("%sAAA O %s :Help:           Shows this\n" % (SERVER_NUMERIC, target))
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
             elif(line[3] == ":.access" and channel is True or channel is False and line[3] == ":access"):
                 try:
                     if line[5] != False:
@@ -408,15 +408,15 @@ while 1:
                             access = line[5]
                             access = int(access)
                         except ValueError:
-                            s.send("%sAAA O %s :Access level must be an integer.\n" % (SRVID, target))
+                            s.send("%sAAA O %s :Access level must be an integer.\n" % (SERVER_NUMERIC, target))
                             break
                         if access_level(target) == 1000:
                             if access <= 1000:
                                 update_access(line[4], access, target)
                             else:
-                                s.send("%sAAA O %s :Access must be greater than 1000\n" % (SRVID, target))
+                                s.send("%sAAA O %s :Access must be greater than 1000\n" % (SERVER_NUMERIC, target))
                         else:
-                            s.send("%sAAA O %s :Access modification can only be done via root (1000 access) users.\n" % (SRVID, target))
+                            s.send("%sAAA O %s :Access modification can only be done via root (1000 access) users.\n" % (SERVER_NUMERIC, target))
                 except IndexError:
                     try:
                         if line[4] != False:
@@ -424,4 +424,4 @@ while 1:
                                 show_access(line[4], target)
                     except IndexError:
                         if access_level(target) > 0:
-                            s.send("%sAAA O %s :Account %s has access %s.\n" % (SRVID, target, get_acc(target), access_level(target)))
+                            s.send("%sAAA O %s :Account %s has access %s.\n" % (SERVER_NUMERIC, target, get_acc(target), access_level(target)))
