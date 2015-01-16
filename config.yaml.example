@@ -1,0 +1,22 @@
+server:
+  name: GameSurge
+  host: 127.0.0.1
+  port: 4500
+  self_server_host_name: Pseudo.PX.SC.GameSurge.net
+  hops: 1
+  server_description: Python Pseudo IRC Services
+  server_numeric: AS
+  server_password: 
+
+bot:
+  nick: ProxyServ
+  host: services.gamesurge.net
+  gecos: Proxy Monitoring Service
+  umodes: +oik
+  debug_channel: "#proxyserv"
+
+database:
+  dbname: 
+  user: 
+  host: 
+  pass: 
