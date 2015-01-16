@@ -15,8 +15,6 @@ import psycopg2
 import yaml
 import access
 import server
-import database
-import initialize
 from config import *
 from threading import Thread
 from thread import start_new_thread, allocate_lock
