@@ -2,7 +2,7 @@ def http_connect(ip):
     from socks import *
     from server import *
     from config import *
-    from bot import *
+    from bot import connect
     num_threads = 0
     thread_started = False
     lock = allocate_lock()

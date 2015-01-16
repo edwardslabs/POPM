@@ -1,8 +1,7 @@
 def show_access(target, source):
     from config import *
     from bot import *
-    config = config.Config()
-    conn = server.Server()
+    from server import *
     if target == "*":
         cur.execute("SELECT access,admin FROM users")
         s.send("%sAAA O %s :Account    Level\n" % (SERVER_NUMERIC, source))
@@ -42,7 +41,7 @@ def update_access(user, level, whodidit, userlist):
     from server import *
     from bot import *
     if isinstance(level, int):
-        bywho = get_acc(whodidit)
+        bywho = get_acc(whodidit, userlist)
         cur.execute("SELECT admin FROM users WHERE admin = %r" % (user))
         epoch = int(time.time())
         if cur.rowcount < 1:

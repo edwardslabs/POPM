@@ -3,12 +3,12 @@ import time
 import string
 import signal
 import sys
-from dnsbl import *
 from config import *
-from access import *
-from settings import *
-from signals import *
-from commands import *
+from dnsbl import DNSBL
+from access import show_access, get_level_req, update_access, get_acc, access_level
+from settings import is_settable, get_set, update_settings, get_set_value
+from signals import signal_handler
+from commands import privmsg
 signal.signal(signal.SIGINT, signal_handler)
 s=socket.socket()
 s.connect((HOST, PORT))

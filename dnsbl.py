@@ -1,6 +1,6 @@
 def DNSBL(ip, nick):
     from server import *
-    from bot import *
+    from bot import connect
     from config import *
     from http_connect import *
     db.curauto.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")

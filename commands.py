@@ -5,27 +5,28 @@ import signal
 import sys
 from dnsbl import *
 from config import *
-from access import *
-from settings import *
-from signals import *
+from access import show_access, get_level_req, update_access, get_acc, access_level
+from settings import is_settable, get_set, update_settings, get_set_value
+from signals import signal_handler
 from server import *
 
 def privmsg(userlist, line):
     channel = False
     target = line[0]
+    command = line[3][1:].lower()
     if line[2][:1] == "#":
         channel = True
         channel_target = line[2]
         target = line[0]
-    if(line[3].lower() == ":.threads" and channel) or (not channel and line[3].lower() == ":threads"):
+    if(command == ".threads" and channel) or (not channel and command == "threads"):
         get_threads(target, userlist, line)
-    elif(line[3].lower() == ":.help" and channel) or (not channel and line[3].lower() == ":help"):
+    elif(command == ".help" and channel) or (not channel and command == "help"):
         get_help(target, userlist, line)
-    elif(line[3].lower() == ":.access" and channel) or (not channel and line[3].lower() == ":access"):
+    elif(command == ".access" and channel) or (not channel and command == "access"):
         get_access(target, userlist, line)
-    elif(line[3].lower() == ":.die" and channel) or (not channel and line[3].lower() == ":die"):
+    elif(command == ".die" and channel) or (not channel and command == "die"):
         die(target, userlist, line)
-    elif(line[3].lower() == ":.set" and channel) or (not channel and line[3].lower() == ":set"):
+    elif(command == ".set" and channel) or (not channel and command == "set"):
         do_set(target, userlist, line)
     else:
         command_unknown(target, userlist, line)
@@ -203,7 +204,6 @@ def get_help(target, userlist, line):
                     s.send("%sAAA O %s :%s is an unknown command to me.\n" % (SERVER_NUMERIC, target, line[4]))
         except IndexError:
             if access_level(target, userlist) > 0:
-                print "IN HELP"
                 s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
                 s.send("%sAAA O %s :%s gives authorized users extra control over the proxy monitoring system.\n" % (SERVER_NUMERIC, target, BOT_NAME))
                 s.send("%sAAA O %s :General commands:\n" % (SERVER_NUMERIC, target))
