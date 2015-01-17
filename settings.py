@@ -51,10 +51,19 @@ def update_settings(param, newlevel, target):
              cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
              pgconn.commit()
              print "Updated settings"
+             for row in cur.fetchall():
+                 ENABLE_DNSBL = row[0]
+                 ENABLE_HTTP = row[1]
+                 ENABLE_SOCKS = row[2]
              s.send("%sAAA O %s :%s has been set to %s.\n" % (SERVER_NUMERIC, target, fancy, fancyonoff))
     else:
          cur.execute("UPDATE settings SET %s = %d" % (param, newlevel))
          pgconn.commit()
+         cur.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")
+         for row in cur.fetchall():
+             ENABLE_DNSBL = row[0]
+             ENABLE_HTTP = row[1]
+             ENABLE_SOCKS = row[2]
          print "Updated settings"
          s.send("%sAAA O %s :%s has been set to %s\n" % (SERVER_NUMERIC, target, fancy, newlevel))
 

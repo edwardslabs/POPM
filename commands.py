@@ -34,7 +34,6 @@ def privmsg(userlist, line):
 def gline_http(ip, timewo, timew, port):
     from server import *
     from config import *
-    print "IN GLINE"
     s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
     print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
 
@@ -42,8 +41,8 @@ def get_threads(target, userlist, line):
     from server import *
     if access_level(target, userlist) > 750:
         try:
-            s.send("%sAAA O %s :There are %s threads running\n" % (SERVER_NUMERIC, target, threading.activeCount()))
-            print("[WRITE]: %sAAA O %s :There are %s threads running" % (SERVER_NUMERIC, target, threading.activeCount()))
+            s.send("%sAAA O %s :There are %s threads running\n" % (SERVER_NUMERIC, target, multiprocessing.cpu_count()))
+            print("[WRITE]: %sAAA O %s :There are %s threads running" % (SERVER_NUMERIC, target, multiprocessing.cpu_count()))
         except NameError:
             s.send("%sAAA O %s :There are no threads running\n" % (SERVER_NUMERIC, target))
             print("[WRITE]: %sAAA O %s :There are no threads running" % (SERVER_NUMERIC, target))
