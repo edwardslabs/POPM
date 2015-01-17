@@ -3,12 +3,15 @@ import time
 import string
 import signal
 import sys
+from threading import Thread
+from thread import start_new_thread, allocate_lock
 from config import *
-from dnsbl import DNSBL
+from proxy import DNSBL
 from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value
 from signals import signal_handler
 from commands import privmsg
+from multiprocessing import Process, Queue
 signal.signal(signal.SIGINT, signal_handler)
 s=socket.socket()
 s.connect((HOST, PORT))
@@ -104,8 +107,8 @@ while 1:
 
         # Get incomming connections #
         if(line[1] == "N" and complete == 1):
-            thread = Thread(target=dnsbl.DNSBL(line[6], line[2]))
-            thread.start()
+            newip = Process(target=DNSBL, args=(line[6], line[2]))
+            newip.start()
 
         # Commands (efficienize me) #
         if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (SERVER_NUMERIC)):

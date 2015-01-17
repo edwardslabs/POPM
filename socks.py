@@ -1,4 +1,6 @@
 def sockscheck(ip):
+    from threading import Thread
+    from thread import start_new_thread, allocate_lock
     num_threads = 0
     thread_started = False
     lock = allocate_lock()

@@ -1,14 +1,20 @@
+from server import *
+from bot import *
+from settings import *
+
 def http_connect(ip):
-    from socks import *
-    from server import *
-    from config import *
-    from bot import connect
+    import socket
+    import socks
+    from threading import Thread
+    from thread import start_new_thread, allocate_lock
+    sockfunc = socks.Sock()
+    info = dnsbl.DNSBL()
     num_threads = 0
     thread_started = False
     lock = allocate_lock()
     contrue = 0
-    if ENABLE_HTTP == 0:
-        sockscheck(ip)
+    if info.ENABLE_HTTP == 0:
+        sockfunc.sockscheck(ip)
     else:
         global num_threads, thread_started, contrue
         testhost = "blindsighttf2.com:80"
@@ -89,4 +95,4 @@ def http_connect(ip):
             pass
 
         if str(contrue) == "0" or contrue is None:
-            sockscheck(ip)
+            sockfunc.sockscheck(ip)

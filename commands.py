@@ -28,8 +28,15 @@ def privmsg(userlist, line):
         die(target, userlist, line)
     elif(command == ".set" and channel) or (not channel and command == "set"):
         do_set(target, userlist, line)
-    else:
+    elif(not channel):
         command_unknown(target, userlist, line)
+
+def gline_http(ip, timewo, timew, port):
+    from server import *
+    from config import *
+    print "IN GLINE"
+    s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
+    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
 
 def get_threads(target, userlist, line):
     from server import *
