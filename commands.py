@@ -3,7 +3,6 @@ import time
 import string
 import signal
 import sys
-from dnsbl import *
 from config import *
 from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value
@@ -35,7 +34,7 @@ def gline_http(ip, timewo, timew, port):
     from server import *
     from config import *
     s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
-    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
+    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
 
 def get_threads(target, userlist, line):
     from server import *

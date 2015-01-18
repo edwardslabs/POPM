@@ -21,6 +21,7 @@ def update_settings(param, newlevel, target):
     from config import *
     from bot import *
     from server import *
+    import sys
     newlevel = int(newlevel)
     if param == "dnsbl":
         param = "enable_dnsbl"
@@ -50,12 +51,17 @@ def update_settings(param, newlevel, target):
                  fancyonoff = "off"
              cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
              pgconn.commit()
+             cur.execute("SELECT * from settings")
              print "Updated settings"
-             for row in cur.fetchall():
-                 ENABLE_DNSBL = row[0]
-                 ENABLE_HTTP = row[1]
-                 ENABLE_SOCKS = row[2]
-             s.send("%sAAA O %s :%s has been set to %s.\n" % (SERVER_NUMERIC, target, fancy, fancyonoff))
+             try:
+                 for row in cur.fetchall():
+                     ENABLE_DNSBL = row[0]
+                     ENABLE_HTTP = row[1]
+                     ENABLE_SOCKS = row[2]
+                 s.send("%sAAA O %s :%s has been set to %s.\n" % (SERVER_NUMERIC, target, fancy, fancyonoff))
+             except:
+                 print "ERROR! [%s %s]" % (sys.exc_info()[0], sys.exc_info()[0])
+                 s.send("%sAAA O %s :A fatal error has occured changing %s to %s. Please send this message to the developers: %s %s\n" % (SERVER_NUMERIC, target, fancy, fancyonoff, sys.exc_info()[0], sys.exc_info()[1]))
     else:
          cur.execute("UPDATE settings SET %s = %d" % (param, newlevel))
          pgconn.commit()
