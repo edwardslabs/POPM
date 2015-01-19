@@ -1,13 +1,14 @@
 def is_settable(param):
-    if (param.lower() == "dnsbl"
-    or param.lower() == "http"
-    or param.lower() == "socks"
-    or param.lower() == "die"
-    or param.lower() == "set"
-    or param.lower() == "setters"
-    or param.lower() == "http_connect"
-    or param.lower() == "emote"
-    or param.lower() == "say"):
+    param = param.lower()
+    if (param == "dnsbl"
+    or param == "http"
+    or param == "socks"
+    or param == "die"
+    or param == "set"
+    or param == "setters"
+    or param == "http_connect"
+    or param == "emote"
+    or param == "say"):
         return True
     return False
 
