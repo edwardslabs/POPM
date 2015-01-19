@@ -1,5 +1,5 @@
 def is_settable(param):
-    if param.lower() == "dnsbl" or param.lower() == "http" or param.lower() == "socks" or param.lower() == "die" or param.lower() == "set" or param.lower() == "setters" or param.lower() == "http_connect":
+    if param.lower() == "dnsbl" or param.lower() == "http" or param.lower() == "socks" or param.lower() == "die" or param.lower() == "set" or param.lower() == "setters" or param.lower() == "http_connect" or param.lower() == "emote" or param.lower() == "say":
         return True
     return False
 
@@ -7,7 +7,7 @@ def get_set(target):
     from config import *
     from bot import *
     from server import *
-    cur.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")
+    cur.execute("SELECT * FROM settings")
     s.send("%sAAA O %s :Current configuration settings:\n" % (SERVER_NUMERIC, target))
     for row in cur.fetchall():
         s.send("%sAAA O %s :DNSBL Scans:                   %s\n" % (SERVER_NUMERIC, target, row[0]))
@@ -15,6 +15,8 @@ def get_set(target):
         s.send("%sAAA O %s :SOCKS Scans:                   %s\n" % (SERVER_NUMERIC, target, row[2]))
         s.send("%sAAA O %s :Die access:                        %s\n" % (SERVER_NUMERIC, target, row[3]))
         s.send("%sAAA O %s :Setters level:                     %s\n" % (SERVER_NUMERIC, target, row[4]))
+        s.send("%sAAA O %s :Say access:                     %s\n" % (SERVER_NUMERIC, target, row[5]))
+        s.send("%sAAA O %s :Emote access:                     %s\n" % (SERVER_NUMERIC, target, row[6]))
     s.send("%sAAA O %s :End of configuration.\n" % (SERVER_NUMERIC, target))
 
 def update_settings(param, newlevel, target):
@@ -38,6 +40,12 @@ def update_settings(param, newlevel, target):
     elif param == "set" or param == "setters":
         param = "access_set"
         fancy = "Setters"
+    elif param == "emote":
+        param = "access_emote"
+        fancy = "Emote"
+    elif param == "say":
+        param = "access_say"
+        fancy = "say"
 
     if param == "enable_dnsbl" or param == "enable_socks" or param == "enable_http":
         if newlevel > 1 or newlevel < 0:
@@ -98,3 +106,24 @@ def get_set_value(param, target):
     cur.execute("SELECT %s FROM settings" % (param))
     for row in cur.fetchall():
         s.send("%sAAA O %s :%s is set to %s\n" % (SERVER_NUMERIC, target, fancy, row[0]))
+
+def get_die():
+    from bot import *
+    cur.execute("SELECT access_die FROM settings")
+    for row in cur.fetchall():
+        value = row[0]
+    return value
+
+def get_say():
+    from bot import *
+    cur.execute("SELECT access_say FROM settings")
+    for row in cur.fetchall():
+        value = row[0]
+    return value
+
+def get_say():
+    from bot import *
+    cur.execute("SELECT access_emote FROM settings")
+    for row in cur.fetchall():
+        value = row[0]
+    return value

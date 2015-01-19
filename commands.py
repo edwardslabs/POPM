@@ -5,7 +5,7 @@ import signal
 import sys
 from config import *
 from access import show_access, get_level_req, update_access, get_acc, access_level
-from settings import is_settable, get_set, update_settings, get_set_value
+from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say
 from server import *
 
 def privmsg(userlist, line):
@@ -16,18 +16,31 @@ def privmsg(userlist, line):
         channel = True
         channel_target = line[2]
         target = line[0]
-    if command[:1] == PREFIX:
+    if command[:1] == PREFIX and channel:
         command = command[1:]
+
+    # Commands list #
     if(command == "threads"):
         get_threads(target, userlist, line)
+
     elif(command == "help"):
         get_help(target, userlist, line)
+
     elif(command == "access"):
         get_access(target, userlist, line)
+
     elif(command == "die"):
         die(target, userlist, line)
+
     elif(command == "set"):
         do_set(target, userlist, line)
+
+    elif (command == "say"):
+        say(target, channel, userlist, line)
+
+    elif (command == "emote"):
+        emote(target, channel, userlist, line)
+
     elif(not channel):
         command_unknown(target, userlist, line)
 
@@ -82,6 +95,96 @@ def get_access(target, userlist, line):
             if access_level(target, userlist) > 0:
                 s.send("%sAAA O %s :Account %s has access %s.\n" % (SERVER_NUMERIC, target, get_acc(target, userlist), access_level(target, userlist)))
 
+def say(target, channel, userlist, line):
+    from server import *
+    if access_level(target, userlist) >= get_say():
+        try:
+            if line[4] != False:
+                try:
+                    if line[5] != False:
+                        arlen = len(line)
+                        newstring = ""
+                        if channel and line[4][:1] != "#":
+                            taruser = line[2]
+                            i = 4
+                        else:
+                            taruser = line[4]
+                            i = 5
+                        while i < arlen:
+                            if newstring == "":
+                                newstring = line[i]
+                            else:
+                                newstring = newstring + " " + line[i]
+                            i += 1
+                        s.send("%sAAA P %s :%s\n" % (SERVER_NUMERIC, taruser, newstring))
+                        print("[WRITE]: %sAAA P %s :%s" % (SERVER_NUMERIC, taruser, newstring))
+                except IndexError:
+                    arlen = len(line)
+                    newstring = ""
+                    if channel and line[4][:1] != "#":
+                        taruser = line[2]
+                        i = 4
+                    else:
+                        s.send("%sAAA O %s :Insufficient paramaters for SAY\n" % (SERVER_NUMERIC, target))
+                        print("[WRITE]: %sAAA O %s :Insufficient paramaters for SAY" % (SERVER_NUMERIC, target))
+                        return
+                    while i < arlen:
+                        if newstring == "":
+                            newstring = line[i]
+                        else:
+                            newstring = newstring + " " + line[i]
+                        i += 1
+                    s.send("%sAAA P %s :%s\n" % (SERVER_NUMERIC, taruser, newstring))
+                    print("[WRITE]: %sAAA P %s :%s" % (SERVER_NUMERIC, taruser, newstring))
+        except IndexError:
+                    s.send("%sAAA O %s :Insufficient paramaters for SAY\n" % (SERVER_NUMERIC, target))
+                    print("[WRITE]: %sAAA O %s :Insufficient paramaters for SAY" % (SERVER_NUMERIC, target))
+
+def emote(target, channel, userlist, line):
+    from server import *
+    if access_level(target, userlist) >= get_say():
+        try:
+            if line[4] != False:
+                try:
+                    if line[5] != False:
+                        arlen = len(line)
+                        newstring = ""
+                        if channel and line[4][:1] != "#":
+                            taruser = line[2]
+                            i = 4
+                        else:
+                            taruser = line[4]
+                            i = 5
+                        while i < arlen:
+                            if newstring == "":
+                                newstring = line[i]
+                            else:
+                                newstring = newstring + " " + line[i]
+                            i += 1
+                        s.send("%sAAA P %s :\001ACTION %s\001\n" % (SERVER_NUMERIC, taruser, newstring))
+                        print("[WRITE]: %sAAA P %s :\001ACTION %s\001" % (SERVER_NUMERIC, taruser, newstring))
+                except IndexError:
+                    arlen = len(line)
+                    newstring = ""
+                    if channel and line[4][:1] != "#":
+                        taruser = line[2]
+                        i = 4
+                    else:
+                        s.send("%sAAA O %s :Insufficient paramaters for EMOTE\n" % (SERVER_NUMERIC, target))
+                        print("[WRITE]: %sAAA O %s :Insufficient paramaters for EMOTE" % (SERVER_NUMERIC, target))
+                        return
+                    while i < arlen:
+                        if newstring == "":
+                            newstring = line[i]
+                        else:
+                            newstring = newstring + " " + line[i]
+                        i += 1
+                    s.send("%sAAA P %s :\001ACTION %s\001\n" % (SERVER_NUMERIC, taruser, newstring))
+                    print("[WRITE]: %sAAA P %s :\001ACTION %s\001" % (SERVER_NUMERIC, taruser, newstring))
+        except IndexError:
+                    s.send("%sAAA O %s :Insufficient paramaters for EMOTE\n" % (SERVER_NUMERIC, target))
+                    print("[WRITE]: %sAAA O %s :Insufficient paramaters for EMOTE" % (SERVER_NUMERIC, target))
+
 def die(target, userlist, line):
     import sys
     from server import *
@@ -97,7 +200,7 @@ def die(target, userlist, line):
                     newstring = newstring + " " + line[i]
                 i += 1
             account = get_acc(target, userlist)
-            if access_level(target, userlist) >= 900:
+            if access_level(target, userlist) >= get_die():
                 s.send("%sAAA Q :%s\n" % (SERVER_NUMERIC, newstring))
                 print("[WRITE]: %sAAA Q :%s" % (SERVER_NUMERIC, newstring))
                 s.send("%s SQ %s 0 :[%s (by %s)]\n" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
@@ -188,6 +291,16 @@ def get_help(target, userlist, line):
                     s.send("%sAAA O %s :and SQUIT reason. Note: When you use DIE, your NickServ account\n" % (SERVER_NUMERIC, target))
                     s.send("%sAAA O %s :name will be attached to the SQUIT message.\n" % (SERVER_NUMERIC, target))
                     s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                elif line[4].lower() == "say":
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                    s.send("%sAAA O %s :/msg %s SAY <#channel|nick> <text>\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                    s.send("%sAAA O %s :Makes %s send a message to a specified nick/channel.\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                elif line[4].lower() == "emote":
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                    s.send("%sAAA O %s :/msg %s EMOTE <#channel|nick> <text>\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                    s.send("%sAAA O %s :Makes %s do the equivelent of /me to the specified nick/channel.\n" % (SERVER_NUMERIC, target, EMOTE))
+                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
                 elif line[4].lower() == "set":
                     s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
                     s.send("%sAAA O %s :SET on its own will display the current configuration\n" % (SERVER_NUMERIC, target))
@@ -211,6 +324,8 @@ def get_help(target, userlist, line):
                     s.send("%sAAA O %s :Access Level Set Options:\n" % (SERVER_NUMERIC, target))
                     s.send("%sAAA O %s :die\n" % (SERVER_NUMERIC, target))
                     s.send("%sAAA O %s :setters\n" % (SERVER_NUMERIC, target))
+                    s.send("%sAAA O %s :say\n" % (SERVER_NUMERIC, target))
+                    s.send("%sAAA O %s :emote\n" % (SERVER_NUMERIC, target))
                     s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
                 else:
                     s.send("%sAAA O %s :%s is an unknown command to me.\n" % (SERVER_NUMERIC, target, line[4]))
@@ -222,5 +337,7 @@ def get_help(target, userlist, line):
                 s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SERVER_NUMERIC, target))
                 s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SERVER_NUMERIC, target))
                 s.send("%sAAA O %s :Set:            Sets the configuration for POPM\n" % (SERVER_NUMERIC, target))
+                s.send("%sAAA O %s :Say:            Makes %s talk\n" % (SERVER_NUMERIC, target, BOT_NAME))
+                s.send("%sAAA O %s :Emote:          Makes %s do the equivelent of /me\n" % (SERVER_NUMERIC, target, BOT_NAME))
                 s.send("%sAAA O %s :Die:            Terminates POPM and disconnects from %s\n" % (SERVER_NUMERIC, target, NETWORK_NAME))
                 s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))

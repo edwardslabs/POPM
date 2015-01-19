@@ -30,5 +30,3 @@ for row in curauto.fetchall():
     ENABLE_DNSBL = row[0]
     ENABLE_HTTP = row[1]
     ENABLE_SOCKS = row[2]
-    ACCESS_DIE = row[3]
-    ACCESS_SET = row[4]
