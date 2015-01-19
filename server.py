@@ -115,8 +115,13 @@ while 1:
 
         # Get incomming connections #
         if(line[1] == "N"):
-            newip = Process(target=DNSBL, args=(line[6], line[2]))
-            newip.start()
+            if (SCAN_ON_BURST == 1):
+                newip = Process(target=DNSBL, args=(line[6], line[2]))
+                newip.start()
+            else:
+                if (complete == 1):
+                    newip = Process(target=DNSBL, args=(line[6], line[2]))
+                    newip.start()
 
         # Commands (efficienize me) #
         if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (SERVER_NUMERIC)):
