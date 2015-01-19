@@ -60,32 +60,31 @@ def get_threads(target, userlist, line):
     from server import *
     if access_level(target, userlist) > 750:
         try:
-            s.send("%sAAA O %s :There are %s threads running\n" % (SERVER_NUMERIC, target, multiprocessing.cpu_count()))
+            serv_notice(target, "There are %s threads running" % (multiprocessing.cpu_count()))
             print("[WRITE]: %sAAA O %s :There are %s threads running" % (SERVER_NUMERIC, target, multiprocessing.cpu_count()))
         except NameError:
-            s.send("%sAAA O %s :There are no threads running\n" % (SERVER_NUMERIC, target))
+            serv_notice(target, "There are no threads running")
             print("[WRITE]: %sAAA O %s :There are no threads running" % (SERVER_NUMERIC, target))
     elif access_level(target, userlist) <= 749:
-        s.send("%sAAA O %s :You lack access to this command\n" % (SERVER_NUMERIC, target))
+        serv_notice(target, "You lack access to this command.")
         print("[WRITE]: %sAAA O %s :You lack access to this command" % (SERVER_NUMERIC, target))
 
 def get_access(target, userlist, line):
-    from server import *
     try:
         if line[5] != False:
             try:
                 access = line[5]
                 access = int(access)
             except ValueError:
-                s.send("%sAAA O %s :Access level must be an integer.\n" % (SERVER_NUMERIC, target))
+                serv_notice(target, "Access level must be an integer.")
                 return
             if access_level(target, userlist) == 1000:
                 if access <= 1000:
                     update_access(line[4], access, target, userlist)
                 else:
-                    s.send("%sAAA O %s :Access must be greater than 1000\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "Access must be greater than 1000.")
             else:
-                s.send("%sAAA O %s :Access modification can only be done via root (1000 access) users.\n" % (SERVER_NUMERIC, target))
+                serv_notice(target, "Access modification can only be done via root (1000 access) users.")
     except IndexError:
         try:
             if line[4] != False:
@@ -93,10 +92,9 @@ def get_access(target, userlist, line):
                     show_access(line[4], target)
         except IndexError:
             if access_level(target, userlist) > 0:
-                s.send("%sAAA O %s :Account %s has access %s.\n" % (SERVER_NUMERIC, target, get_acc(target, userlist), access_level(target, userlist)))
+                serv_notice(target, "Account %s has access %s." % (get_acc(target, userlist), access_level(target, userlist)))
 
 def say(target, channel, userlist, line):
-    from server import *
     if access_level(target, userlist) >= get_say():
         try:
             if line[4] != False:
@@ -116,7 +114,7 @@ def say(target, channel, userlist, line):
                             else:
                                 newstring = newstring + " " + line[i]
                             i += 1
-                        s.send("%sAAA P %s :%s\n" % (SERVER_NUMERIC, taruser, newstring))
+                        serv_privmsg(taruser, "%s" % (newstring))
                         print("[WRITE]: %sAAA P %s :%s" % (SERVER_NUMERIC, taruser, newstring))
                 except IndexError:
                     arlen = len(line)
@@ -125,7 +123,7 @@ def say(target, channel, userlist, line):
                         taruser = line[2]
                         i = 4
                     else:
-                        s.send("%sAAA O %s :Insufficient paramaters for SAY\n" % (SERVER_NUMERIC, target))
+                        serv_notice(target, "Insufficient paramaters for SAY")
                         print("[WRITE]: %sAAA O %s :Insufficient paramaters for SAY" % (SERVER_NUMERIC, target))
                         return
                     while i < arlen:
@@ -134,14 +132,15 @@ def say(target, channel, userlist, line):
                         else:
                             newstring = newstring + " " + line[i]
                         i += 1
-                    s.send("%sAAA P %s :%s\n" % (SERVER_NUMERIC, taruser, newstring))
+                    serv_privmsg(taruser, "%s" % (newstring))
                     print("[WRITE]: %sAAA P %s :%s" % (SERVER_NUMERIC, taruser, newstring))
         except IndexError:
-                    s.send("%sAAA O %s :Insufficient paramaters for SAY\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "Insufficient paramaters for SAY")
                     print("[WRITE]: %sAAA O %s :Insufficient paramaters for SAY" % (SERVER_NUMERIC, target))
+    else:
+        serv_notice(target, "You lack access to this command.")
 
 def emote(target, channel, userlist, line):
-    from server import *
     if access_level(target, userlist) >= get_say():
         try:
             if line[4] != False:
@@ -161,7 +160,7 @@ def emote(target, channel, userlist, line):
                             else:
                                 newstring = newstring + " " + line[i]
                             i += 1
-                        s.send("%sAAA P %s :\001ACTION %s\001\n" % (SERVER_NUMERIC, taruser, newstring))
+                        serv_privmsg(taruser, "\001ACTION %s\001" % (newstring))
                         print("[WRITE]: %sAAA P %s :\001ACTION %s\001" % (SERVER_NUMERIC, taruser, newstring))
                 except IndexError:
                     arlen = len(line)
@@ -170,7 +169,7 @@ def emote(target, channel, userlist, line):
                         taruser = line[2]
                         i = 4
                     else:
-                        s.send("%sAAA O %s :Insufficient paramaters for EMOTE\n" % (SERVER_NUMERIC, target))
+                        serv_notice(target, "Insufficient paramaters for EMOTE")
                         print("[WRITE]: %sAAA O %s :Insufficient paramaters for EMOTE" % (SERVER_NUMERIC, target))
                         return
                     while i < arlen:
@@ -179,11 +178,13 @@ def emote(target, channel, userlist, line):
                         else:
                             newstring = newstring + " " + line[i]
                         i += 1
-                    s.send("%sAAA P %s :\001ACTION %s\001\n" % (SERVER_NUMERIC, taruser, newstring))
+                    serv_privmsg(taruser, "\001ACTION %s\001" % (newstring))
                     print("[WRITE]: %sAAA P %s :\001ACTION %s\001" % (SERVER_NUMERIC, taruser, newstring))
         except IndexError:
-                    s.send("%sAAA O %s :Insufficient paramaters for EMOTE\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "Insufficient paramaters for EMOTE.")
                     print("[WRITE]: %sAAA O %s :Insufficient paramaters for EMOTE" % (SERVER_NUMERIC, target))
+    else:
+        serv_notice(target, "You lack access to this command.")
 
 def die(target, userlist, line):
     import sys
@@ -207,10 +208,10 @@ def die(target, userlist, line):
                 print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
                 sys.exit(0)
             else:
-                s.send("%sAAA O %s :You lack access to this command\n" % (SERVER_NUMERIC, target))
+                serv_notice(target, "You lack access to this command")
                 print("[WRITE]: %sAAA O %s :You lack access to this command" % (SERVER_NUMERIC, target))
     except IndexError:
-        s.send("%sAAA O %s :Insufficient paramaters for DIE\n" % (SERVER_NUMERIC, target))
+        serv_notice(target, "Insufficient paramaters for DIE")
         print("[WRITE]: %sAAA O %s :Insufficient paramaters for DIE" % (SERVER_NUMERIC, target))
 
 def do_set(target, userlist, line):
@@ -230,20 +231,22 @@ def do_set(target, userlist, line):
                                 else:
                                     newlevel = int(newlevel)
                             except ValueError:
-                                s.send("%sAAA O %s :Paramater must be an integer.\n" % (SERVER_NUMERIC, target))
+                                serv_notice(target, "Paramater must be an integer.")
                             if newlevel <= 1000 and newlevel >= 0:
                                 update_settings(line[4], newlevel, target)
                             else:
-                                s.send("%sAAA O %s :Paramater must be an integer between 0 and 1000\n" % (SERVER_NUMERIC, target))
+                                serv_notice(target, "Paramater must be an integer between 0 and 1000.")
                     except IndexError:
                         get_set_value(line[4], target)
                 else:
-                    s.send("%sAAA O %s :Invalid SET option.\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "Invalid SET option.")
             else:
-                s.send("%sAAA O %s :Insufficient access.\n" % (SERVER_NUMERIC, target))
+                serv_notice(target, "You lack access to this command.")
     except IndexError:
         if access_level(target, userlist) >= get_level_req("setters"):
             get_set(target)
+        else:
+            serv_notice(target, "You lack access to this command.")
 
 def command_unknown(target, userlist, line):
     from server import *
@@ -257,7 +260,15 @@ def command_unknown(target, userlist, line):
             else:
                 newstring = newstring + " " + line[i]
             i += 1
-        s.send("%sAAA O %s :Unknown command %s\n" % (SERVER_NUMERIC, target, newstring[1:]))
+        serv_notice(target, "Unknown command %s." % (newstring[1:]))
+
+def serv_notice(target, message):
+    from server import *
+    s.send("%sAAA O %s :%s\n" % (SERVER_NUMERIC, target, message))
+
+def serv_privmsg(target, message):
+    from server import *
+    s.send("%sAAA P %s :%s\n" % (SERVER_NUMERIC, target, message))
 
 def get_help(target, userlist, line):
     from server import *
@@ -265,79 +276,79 @@ def get_help(target, userlist, line):
         try:
             if line[4] != False:
                 if line[4].lower() == "threads":
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :THREADS displays the current number of worker threads by %s.\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :These threads are spawned when an incoming connection is recieved\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :to check for proxys on the remote host.\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "THREADS displays the current number of worker threads by %s." % (BOT_NAME))
+                    serv_notice(target, "These threads are spawned when an incoming connection is recieved")
+                    serv_notice(target, "to check for proxys on the remote host.")
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "access":
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :ACCESS is a multi-functional command. Access has the ability to\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :check your access with %s, check other's access, add other users to %s\n" % (SERVER_NUMERIC, target, BOT_NAME, BOT_NAME))
-                    s.send("%sAAA O %s :and to remove users access to %s. At this time, only root users may\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :add or remove other users from %s.\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :Note: To remove a users access, set their access to -1\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :Examples:\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :/msg %s ACCESS foobar\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s ACCESS *\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s ACCESS foo 950\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s ACCESS bar -1\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "ACCESS is a multi-functional command. Access has the ability to")
+                    serv_notice(target, "check your access with %s, check other's access, add other users to %s" % (BOT_NAME, BOT_NAME))
+                    serv_notice(target, "and to remove users access to %s. At this time, only root users may" % (BOT_NAME))
+                    serv_notice(target, "add or remove other users from %s." % (BOT_NAME))
+                    serv_notice(target, "Note: To remove a users access, set their access to -1")
+                    serv_notice(target, "Examples:")
+                    serv_notice(target, "/msg %s ACCESS foobar" % (BOT_NAME))
+                    serv_notice(target, "/msg %s ACCESS *" % (BOT_NAME))
+                    serv_notice(target, "/msg %s ACCESS foo 950" % (BOT_NAME))
+                    serv_notice(target, "/msg %s ACCESS bar -1" % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "die":
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :DIE causes %s to quit and POPM to disconnect from %s.\n" % (SERVER_NUMERIC, target, BOT_NAME, NETWORK_NAME))
-                    s.send("%sAAA O %s :This will completly stop the program and will have to\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :be restarted locally. DIE takes arguments for the QUIT message\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :and SQUIT reason. Note: When you use DIE, your NickServ account\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :name will be attached to the SQUIT message.\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "DIE causes %s to quit and POPM to disconnect from %s." % (BOT_NAME, NETWORK_NAME))
+                    serv_notice(target, "This will completly stop the program and will have to")
+                    serv_notice(target, "be restarted locally. DIE takes arguments for the QUIT message")
+                    serv_notice(target, "and SQUIT reason. Note: When you use DIE, your NickServ account")
+                    serv_notice(target, "name will be attached to the SQUIT message.")
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "say":
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s SAY <#channel|nick> <text>\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :Makes %s send a message to a specified nick/channel.\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "/msg %s SAY <#channel|nick> <text>" % (BOT_NAME))
+                    serv_notice(target, "Makes %s send a message to a specified nick/channel." % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "emote":
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s EMOTE <#channel|nick> <text>\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :Makes %s do the equivelent of /me to the specified nick/channel.\n" % (SERVER_NUMERIC, target, EMOTE))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "/msg %s EMOTE <#channel|nick> <text>" % (BOT_NAME))
+                    serv_notice(target, "Makes %s do the equivelent of /me to the specified nick/channel." % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "set":
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :SET on its own will display the current configuration\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :for %s. Note, that the SET command can only be used by\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :users with SET access. SET can also take arguments.\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :Below is a list of items you can set in %s\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :To change any of the settings, just type\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :/msg %s SET paramter value\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :Examples:\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :/msg %s SET DNSBL off\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s SET HTTP on\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s SET SOCKS on\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s SET SETTERS 900\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :/msg %s SET DIE 1000\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                    s.send("%sAAA O %s :\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :ON/OFF Set Options:\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :http\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :socks\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :dnsbl\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :Access Level Set Options:\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :die\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :setters\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :say\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :emote\n" % (SERVER_NUMERIC, target))
-                    s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "SET on its own will display the current configuration")
+                    serv_notice(target, "for %s. Note, that the SET command can only be used by" % (BOT_NAME))
+                    serv_notice(target, "users with SET access. SET can also take arguments.")
+                    serv_notice(target, "Below is a list of items you can set in %s" % (BOT_NAME))
+                    serv_notice(target, "To change any of the settings, just type")
+                    serv_notice(target, "/msg %s SET paramter value" % (BOT_NAME))
+                    serv_notice(target, "")
+                    serv_notice(target, "Examples:")
+                    serv_notice(target, "/msg %s SET DNSBL off" % (BOT_NAME))
+                    serv_notice(target, "/msg %s SET HTTP on" % (BOT_NAME))
+                    serv_notice(target, "/msg %s SET SOCKS on" % (BOT_NAME))
+                    serv_notice(target, "/msg %s SET SETTERS 900" % (BOT_NAME))
+                    serv_notice(target, "/msg %s SET DIE 1000" % (BOT_NAME))
+                    serv_notice(target, "")
+                    serv_notice(target, "ON/OFF Set Options:")
+                    serv_notice(target, "http")
+                    serv_notice(target, "socks")
+                    serv_notice(target, "dnsbl")
+                    serv_notice(target, "Access Level Set Options:")
+                    serv_notice(target, "die")
+                    serv_notice(target, "setters")
+                    serv_notice(target, "say")
+                    serv_notice(target, "emote")
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 else:
-                    s.send("%sAAA O %s :%s is an unknown command to me.\n" % (SERVER_NUMERIC, target, line[4]))
+                    serv_notice(target, "%s is an unknown command to me." % (line[4]))
         except IndexError:
             if access_level(target, userlist) > 0:
-                s.send("%sAAA O %s :-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                s.send("%sAAA O %s :%s gives authorized users extra control over the proxy monitoring system.\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                s.send("%sAAA O %s :General commands:\n" % (SERVER_NUMERIC, target))
-                s.send("%sAAA O %s :Threads:        Shows current number of threads\n" % (SERVER_NUMERIC, target))
-                s.send("%sAAA O %s :Access:         Shows access for accounts\n" % (SERVER_NUMERIC, target))
-                s.send("%sAAA O %s :Set:            Sets the configuration for POPM\n" % (SERVER_NUMERIC, target))
-                s.send("%sAAA O %s :Say:            Makes %s talk\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                s.send("%sAAA O %s :Emote:          Makes %s do the equivelent of /me\n" % (SERVER_NUMERIC, target, BOT_NAME))
-                s.send("%sAAA O %s :Die:            Terminates POPM and disconnects from %s\n" % (SERVER_NUMERIC, target, NETWORK_NAME))
-                s.send("%sAAA O %s :-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-\n" % (SERVER_NUMERIC, target))
+                serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                serv_notice(target, "%s gives authorized users extra control over the proxy monitoring system." % (BOT_NAME))
+                serv_notice(target, "General commands:")
+                serv_notice(target, "Threads:        Shows current number of threads")
+                serv_notice(target, "Access:         Shows access for accounts")
+                serv_notice(target, "Set:            Sets the configuration for POPM")
+                serv_notice(target, "Say:            Makes %s talk" % (BOT_NAME))
+                serv_notice(target, "Emote:          Makes %s do the equivelent of /me" % (BOT_NAME))
+                serv_notice(target, "Die:            Terminates POPM and disconnects from %s" % (NETWORK_NAME))
+                serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")

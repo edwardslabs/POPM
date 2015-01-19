@@ -5,7 +5,6 @@ import signal
 import sys
 from config import *
 from proxy import DNSBL
-from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value
 from commands import privmsg
 from multiprocessing import Process, Queue
