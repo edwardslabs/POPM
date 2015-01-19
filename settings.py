@@ -129,10 +129,3 @@ def get_say():
     for row in cur.fetchall():
         value = row[0]
     return value
-
-def get_say():
-    from bot import *
-    cur.execute("SELECT access_emote FROM settings")
-    for row in cur.fetchall():
-        value = row[0]
-    return value
