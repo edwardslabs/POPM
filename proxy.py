@@ -38,6 +38,7 @@ def isIP(address):
     return ip
 
 def DNSBL(ip, nick):
+    from commands import gline_dnsbl
     bll = ["tor.dan.me.uk", "rbl.efnetrbl.org", "dnsbl.proxybl.org", "dnsbl.dronebl.org", "tor.efnet.org"]
     try:
         if isIP(ip) is False:
@@ -64,8 +65,7 @@ def DNSBL(ip, nick):
             try:
                 answers = dns.resolver.query(newstring,'A')
                 if answers != False:
-                    s.send("%s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SERVER_NUMERIC, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
-                    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s 259200 %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SERVER_NUMERIC, rawip, int(time.time()), int(time.time()) + 259200, NETWORK_NAME, blacklist))
+                    gline_dnsbl(ip, int(time.time()), int(time.time()) + DURATION, blacklist)
                     contrue = 0
                     break
             except dns.resolver.NXDOMAIN:
@@ -90,7 +90,7 @@ def http_connect_threads(ip, port):
             inttime2 = int(time.time())
             data = tcp.recv(1024)
             if data is not False and "HTTP/1.0 200 OK" in data:
-                gline_http(ip, int(time.time()), int(time.time()) + 259200, port)
+                gline_http(ip, int(time.time()), int(time.time()) + DURATION, port)
                 tcp.close()
                 break
     except socket.error, v:
@@ -113,7 +113,7 @@ def https_connect_threads(ip, port):
             inttime2 = int(time.time())
             data = ssl_sock.recv(1024)
             if data is not False and "HTTP/1.0 200 OK" in data:
-                gline_http(ip, int(time.time()), int(time.time()) + 259200, port)
+                gline_http(ip, int(time.time()), int(time.time()) + DURATION, port)
                 ssl_sock.close()
                 break
     except socket.error, v:

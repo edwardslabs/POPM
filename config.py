@@ -1,4 +1,5 @@
 import yaml
+import sys
 with open('config.yaml', 'r') as f:
     conf = yaml.load(f)
     NETWORK_NAME = conf["server"]["name"]
@@ -19,3 +20,16 @@ with open('config.yaml', 'r') as f:
     DB_USER = conf["database"]["user"]
     DB_HOST = conf["database"]["host"]
     DB_PASS = conf["database"]["pass"]
+    DURATION = conf["misc"]["gline_duration"]
+
+    if not isinstance( DURATION, int ):
+        print "[CONFIG ERROR]: misc:gline_duration must be an integer (in seconds)"
+        sys.exit()
+    if not isinstance( PORT, int ):
+        print "[CONFIG ERROR]: server:port must be an integer"
+        sys.exit()
+    if not isinstance( HOPS, int ):
+        print "[CONFIG ERROR]: server:hops must be an integer"
+        sys.exit()
+    if not len(SERVER_NUMERIC) == 2:
+        print "[CONFIG ERROR]: server:server_numeric must be 2 letters/numers"

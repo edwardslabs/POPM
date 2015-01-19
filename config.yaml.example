@@ -20,4 +20,7 @@ database:
   dbname: 
   user: 
   host: 
-  pass: 
+  pass:
+
+misc:
+ gline_duration: 3600

@@ -34,8 +34,14 @@ def privmsg(userlist, line):
 def gline_http(ip, timewo, timew, port):
     from server import *
     from config import *
-    s.send("%s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
-    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s 259200 %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SERVER_NUMERIC, ip, timewo, timew, NETWORK_NAME, port))
+    s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, port))
+    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, port))
+
+def gline_dnsbl(ip, timewo, timew, blacklist):
+    from server import *
+    from config import *
+    s.send("%s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, blacklist))
+    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, blacklist))
 
 def get_threads(target, userlist, line):
     from server import *

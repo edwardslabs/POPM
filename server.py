@@ -114,7 +114,7 @@ while 1:
             sys.exit(0)
 
         # Get incomming connections #
-        if(line[1] == "N"): #and complete == 1):
+        if(line[1] == "N"):
             newip = Process(target=DNSBL, args=(line[6], line[2]))
             newip.start()
 
