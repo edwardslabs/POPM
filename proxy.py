@@ -161,8 +161,8 @@ def sockscheck(ip):
                 #print "Port " + str(port) + " is dead"
                 pass
 
-
         for newport in ports:
             socksc = Process(target=check_socks, args=(ip, newport))
             socksc.start()
+
         return
