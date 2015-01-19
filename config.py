@@ -13,6 +13,7 @@ with open('config.yaml', 'r') as f:
     BOT_HOST = conf["bot"]["host"]
     BOT_DESC = conf["bot"]["gecos"]
     BOT_MODE = conf["bot"]["umodes"]
+    PREFIX = conf["bot"]["prefix"]
     DEBUG_CHANNEL = conf["bot"]["debug_channel"]
     DB_NAME = conf["database"]["dbname"]
     DB_USER = conf["database"]["user"]

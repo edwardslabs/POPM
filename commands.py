@@ -16,15 +16,17 @@ def privmsg(userlist, line):
         channel = True
         channel_target = line[2]
         target = line[0]
-    if(command == ".threads" and channel) or (not channel and command == "threads"):
+    if command[:1] == PREFIX:
+        command = command[1:]
+    if(command == "threads"):
         get_threads(target, userlist, line)
-    elif(command == ".help" and channel) or (not channel and command == "help"):
+    elif(command == "help"):
         get_help(target, userlist, line)
-    elif(command == ".access" and channel) or (not channel and command == "access"):
+    elif(command == "access"):
         get_access(target, userlist, line)
-    elif(command == ".die" and channel) or (not channel and command == "die"):
+    elif(command == "die"):
         die(target, userlist, line)
-    elif(command == ".set" and channel) or (not channel and command == "set"):
+    elif(command == "set"):
         do_set(target, userlist, line)
     elif(not channel):
         command_unknown(target, userlist, line)
