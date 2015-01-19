@@ -3,15 +3,23 @@ import time
 import string
 import signal
 import sys
-from threading import Thread
-from thread import start_new_thread, allocate_lock
 from config import *
 from proxy import DNSBL
 from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value
-from signals import signal_handler
 from commands import privmsg
 from multiprocessing import Process, Queue
+
+def signal_handler(signal, frame):
+    import sys
+    from config import *
+    from server import *
+    s.send("%sAAA Q :Shutdown recieved from terminal\n" % (SERVER_NUMERIC))
+    print("[WRITE]: %sAAA Q :Shutdown recieved from terminal" % (SERVER_NUMERIC))
+    s.send("%s SQ %s 0 :Shutdown recieved from terminal\n" % (SERVER_NUMERIC, SERVER_HOST_NAME))
+    print("[WRITE]: %s SQ %s 0 :Shutdown recieved from terminal" % (SERVER_NUMERIC, SERVER_HOST_NAME))
+    sys.exit()
+
 signal.signal(signal.SIGINT, signal_handler)
 s=socket.socket()
 s.connect((HOST, PORT))

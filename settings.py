@@ -49,7 +49,9 @@ def update_settings(param, newlevel, target):
              else:
                  newlevel = False
                  fancyonoff = "off"
-             cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
+                 escparam = "'" + str(param) + "'"
+                 escnewlevel = "'" + str(newlevel) + "'"
+             cur.execute("UPDATE settings SET %s = %s" % (escparam, escnewlevel))
              pgconn.commit()
              cur.execute("SELECT * from settings")
              print "Updated settings"
@@ -63,7 +65,9 @@ def update_settings(param, newlevel, target):
                  print "ERROR! [%s %s]" % (sys.exc_info()[0], sys.exc_info()[0])
                  s.send("%sAAA O %s :A fatal error has occured changing %s to %s. Please send this message to the developers: %s %s\n" % (SERVER_NUMERIC, target, fancy, fancyonoff, sys.exc_info()[0], sys.exc_info()[1]))
     else:
-         cur.execute("UPDATE settings SET %s = %d" % (param, newlevel))
+         escparam = "'" + str(param) + "'"
+         escnewlevel = "'" + str(newlevel) + "'"
+         cur.execute("UPDATE settings SET %s = %s" % (escparam, escnewlevel))
          pgconn.commit()
          cur.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")
          for row in cur.fetchall():
@@ -92,6 +96,7 @@ def get_set_value(param, target):
     elif param == "set" or param == "setters":
         param = "access_set"
         fancy = "Setters"
-    cur.execute("SELECT %s FROM settings" % (param))
+        escparam = "'" + str(param) + "'"
+    cur.execute("SELECT %s FROM settings" % (escparam))
     for row in cur.fetchall():
         s.send("%sAAA O %s :%s is set to %s\n" % (SERVER_NUMERIC, target, fancy, row[0]))

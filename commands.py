@@ -6,7 +6,6 @@ import sys
 from config import *
 from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value
-from signals import signal_handler
 from server import *
 
 def privmsg(userlist, line):

@@ -11,7 +11,8 @@ def show_access(target, source):
             num += 1
         s.send("%sAAA O %s :Found %d matches.\n" % (SERVER_NUMERIC, source, num))
     else:
-        cur.execute("SELECT access,admin FROM users WHERE admin = %r" % (target))
+        esctarget = "'" + str(target) + "'"
+        cur.execute("SELECT access,admin FROM users WHERE admin = %s" % (esctarget))
         if cur.rowcount < 1:
             s.send("%sAAA O %s :Could not find account %s.\n" % (SERVER_NUMERIC, source, target))
         else:
@@ -42,22 +43,32 @@ def update_access(user, level, whodidit, userlist):
     from bot import *
     if isinstance(level, int):
         bywho = get_acc(whodidit, userlist)
-        cur.execute("SELECT admin FROM users WHERE admin = %r" % (user))
+        escuser = "'" + str(user) + "'"
+        cur.execute("SELECT admin FROM users WHERE admin = %s" % (escuser))
         epoch = int(time.time())
         if cur.rowcount < 1:
             if level < 0:
                 s.send("%sAAA O %s :Account %s does not exist.\n" % (SERVER_NUMERIC, whodidit, user))
             else:
-                cur.execute("INSERT INTO users (admin,access,added,bywho) VALUES (%r, %r, %r, %r)" % (user, level, epoch, bywho))
+                esclevel = "'" + str(level) + "'"
+                escbywho = "'" + str(bywho) + "'"
+                escepoch = "'" + str(epoch) + "'"
+                esuser = "'" + str(user) + "'"
+                cur.execute("INSERT INTO users (admin,access,added,bywho) VALUES (%s, %s, %s, %s)" % (esuser, esclevel, escepoch, escbywho))
                 pgconn.commit()
                 s.send("%sAAA O %s :Account %s has been added with access %d.\n" % (SERVER_NUMERIC, whodidit, user, level))
         else:
             if level < 0:
-                cur.execute("DELETE FROM users * WHERE admin = %r" % (user))
+                escuser = "'" + str(user) + "'"
+                cur.execute("DELETE FROM users * WHERE admin = %s" % (escuser))
                 pgconn.commit()
                 s.send("%sAAA O %s :Access for account %s has been deleted.\n" % (SERVER_NUMERIC, whodidit, user))
             else:
-                cur.execute("UPDATE users SET access = %r, bywho = %r, added = %r WHERE admin = %r" % (level, bywho, epoch, user))
+                esclevel = "'" + str(level) + "'"
+                escbywho = "'" + str(bywho) + "'"
+                escepoch = "'" + str(epoch) + "'"
+                esuser = "'" + str(user) + "'"
+                cur.execute("UPDATE users SET access = %s, bywho = %s, added = %s WHERE admin = %s" % (esclevel, escbywho, escepoch, esuser))
                 pgconn.commit()
                 s.send("%sAAA O %s :Account %s has been updated to access %d.\n" % (SERVER_NUMERIC, whodidit, user, level))
     else:
@@ -86,7 +97,8 @@ def access_level(numnick, userlist):
     if authed == 0:
         s.send("%sAAA O %s :You must first authenticate with NickServ.\n" % (SERVER_NUMERIC, numnick))
     else:
-        cur.execute("SELECT access FROM users WHERE admin = %r" % (account))
+        escaccount = "'" + str(account) + "'"
+        cur.execute("SELECT access FROM users WHERE admin = %s" % (escaccount))
         is_user = 0
         for row in cur.fetchall():
             access = row[0]
