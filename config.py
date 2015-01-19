@@ -46,3 +46,6 @@ try:
 except IOError:
     print "[CONFIG ERROR]: config.yaml is missing!"
     sys.exit()
+except KeyError:
+    print "[CONFIG ERROR]: Your config file is incomplete; Please recopy config.yaml.example and rebase your settings from there."
+    sys.exit()
