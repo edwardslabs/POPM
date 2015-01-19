@@ -61,13 +61,10 @@ def get_threads(target, userlist, line):
     if access_level(target, userlist) > 750:
         try:
             serv_notice(target, "There are %s threads running" % (multiprocessing.cpu_count()))
-            print("[WRITE]: %sAAA O %s :There are %s threads running" % (SERVER_NUMERIC, target, multiprocessing.cpu_count()))
         except NameError:
             serv_notice(target, "There are no threads running")
-            print("[WRITE]: %sAAA O %s :There are no threads running" % (SERVER_NUMERIC, target))
     elif access_level(target, userlist) <= 749:
         serv_notice(target, "You lack access to this command.")
-        print("[WRITE]: %sAAA O %s :You lack access to this command" % (SERVER_NUMERIC, target))
 
 def get_access(target, userlist, line):
     try:
@@ -115,7 +112,6 @@ def say(target, channel, userlist, line):
                                 newstring = newstring + " " + line[i]
                             i += 1
                         serv_privmsg(taruser, "%s" % (newstring))
-                        print("[WRITE]: %sAAA P %s :%s" % (SERVER_NUMERIC, taruser, newstring))
                 except IndexError:
                     arlen = len(line)
                     newstring = ""
@@ -124,7 +120,6 @@ def say(target, channel, userlist, line):
                         i = 4
                     else:
                         serv_notice(target, "Insufficient paramaters for SAY")
-                        print("[WRITE]: %sAAA O %s :Insufficient paramaters for SAY" % (SERVER_NUMERIC, target))
                         return
                     while i < arlen:
                         if newstring == "":
@@ -133,10 +128,8 @@ def say(target, channel, userlist, line):
                             newstring = newstring + " " + line[i]
                         i += 1
                     serv_privmsg(taruser, "%s" % (newstring))
-                    print("[WRITE]: %sAAA P %s :%s" % (SERVER_NUMERIC, taruser, newstring))
         except IndexError:
                     serv_notice(target, "Insufficient paramaters for SAY")
-                    print("[WRITE]: %sAAA O %s :Insufficient paramaters for SAY" % (SERVER_NUMERIC, target))
     else:
         serv_notice(target, "You lack access to this command.")
 
@@ -161,7 +154,6 @@ def emote(target, channel, userlist, line):
                                 newstring = newstring + " " + line[i]
                             i += 1
                         serv_privmsg(taruser, "\001ACTION %s\001" % (newstring))
-                        print("[WRITE]: %sAAA P %s :\001ACTION %s\001" % (SERVER_NUMERIC, taruser, newstring))
                 except IndexError:
                     arlen = len(line)
                     newstring = ""
@@ -170,7 +162,6 @@ def emote(target, channel, userlist, line):
                         i = 4
                     else:
                         serv_notice(target, "Insufficient paramaters for EMOTE")
-                        print("[WRITE]: %sAAA O %s :Insufficient paramaters for EMOTE" % (SERVER_NUMERIC, target))
                         return
                     while i < arlen:
                         if newstring == "":
@@ -179,10 +170,8 @@ def emote(target, channel, userlist, line):
                             newstring = newstring + " " + line[i]
                         i += 1
                     serv_privmsg(taruser, "\001ACTION %s\001" % (newstring))
-                    print("[WRITE]: %sAAA P %s :\001ACTION %s\001" % (SERVER_NUMERIC, taruser, newstring))
         except IndexError:
                     serv_notice(target, "Insufficient paramaters for EMOTE.")
-                    print("[WRITE]: %sAAA O %s :Insufficient paramaters for EMOTE" % (SERVER_NUMERIC, target))
     else:
         serv_notice(target, "You lack access to this command.")
 
@@ -203,16 +192,13 @@ def die(target, userlist, line):
             account = get_acc(target, userlist)
             if access_level(target, userlist) >= get_die():
                 s.send("%sAAA Q :%s\n" % (SERVER_NUMERIC, newstring))
-                print("[WRITE]: %sAAA Q :%s" % (SERVER_NUMERIC, newstring))
                 s.send("%s SQ %s 0 :[%s (by %s)]\n" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
                 print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
                 sys.exit(0)
             else:
                 serv_notice(target, "You lack access to this command")
-                print("[WRITE]: %sAAA O %s :You lack access to this command" % (SERVER_NUMERIC, target))
     except IndexError:
         serv_notice(target, "Insufficient paramaters for DIE")
-        print("[WRITE]: %sAAA O %s :Insufficient paramaters for DIE" % (SERVER_NUMERIC, target))
 
 def do_set(target, userlist, line):
     from server import *
