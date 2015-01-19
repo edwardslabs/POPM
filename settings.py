@@ -46,6 +46,7 @@ def update_settings(param, newlevel, target):
              if newlevel == 1:
                  newlevel = True
                  fancyonoff = "on"
+                 escnewlevel = "'" + str(newlevel) + "'"
              else:
                  newlevel = False
                  fancyonoff = "off"
