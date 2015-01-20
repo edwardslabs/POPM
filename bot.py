@@ -5,7 +5,6 @@ import ssl
 import string
 import signal
 import time
-import re
 import datetime
 import dns.resolver
 import httplib

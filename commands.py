@@ -1,13 +1,11 @@
-import socket
 import time
 import string
-import signal
 import sys
 import config
-global config
-global sys
 from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say
+global config
+global sys
 
 def privmsg(userlist, line):
     channel = False
