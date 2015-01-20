@@ -10,9 +10,6 @@ from commands import privmsg
 from multiprocessing import Process, Queue
 
 def signal_handler(signal, frame):
-    import sys
-    from config import *
-    from server import *
     s.send("%sAAA Q :Shutdown recieved from terminal\n" % (SERVER_NUMERIC))
     print("[WRITE]: %sAAA Q :Shutdown recieved from terminal" % (SERVER_NUMERIC))
     s.send("%s SQ %s 0 :Shutdown recieved from terminal\n" % (SERVER_NUMERIC, SERVER_HOST_NAME))
