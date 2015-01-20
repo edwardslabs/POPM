@@ -3,35 +3,34 @@ import time
 import string
 import signal
 import sys
-from config import *
+import config
 from proxy import DNSBL
 from settings import is_settable, get_set, update_settings, get_set_value
 from commands import privmsg
 from multiprocessing import Process, Queue
 
 def signal_handler(signal, frame):
-    s.send("%sAAA Q :Shutdown recieved from terminal\n" % (SERVER_NUMERIC))
-    print("[WRITE]: %sAAA Q :Shutdown recieved from terminal" % (SERVER_NUMERIC))
-    s.send("%s SQ %s 0 :Shutdown recieved from terminal\n" % (SERVER_NUMERIC, SERVER_HOST_NAME))
-    print("[WRITE]: %s SQ %s 0 :Shutdown recieved from terminal" % (SERVER_NUMERIC, SERVER_HOST_NAME))
+    config.s.send("%sAAA Q :Shutdown recieved from terminal\n" % (config.SERVER_NUMERIC))
+    print("[WRITE]: %sAAA Q :Shutdown recieved from terminal" % (config.SERVER_NUMERIC))
+    config.s.send("%s SQ %s 0 :Shutdown recieved from terminal\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME))
+    print("[WRITE]: %s SQ %s 0 :Shutdown recieved from terminal" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME))
     sys.exit()
 
 signal.signal(signal.SIGINT, signal_handler)
-s=socket.socket()
-s.connect((HOST, PORT))
+config.s.connect((config.HOST, config.PORT))
 boot_time = int(time.time())
-s.send("PASS %s\n" % (SERVER_PASS))
-print("[WRITE]: PASS %s" % (SERVER_PASS))
-s.send("SERVER %s %s %d %d J10 %s]]] :%s\n" % (SERVER_HOST_NAME, HOPS, boot_time, boot_time, SERVER_NUMERIC, SERVER_DESCRIPTION))
-print("[WRITE]: SERVER %s %s %d %d J10 %s]]] :%s" % (SERVER_HOST_NAME, HOPS, boot_time, boot_time, SERVER_NUMERIC, SERVER_DESCRIPTION))
-s.send("%s N %s 1 %d %s %s %s AAAAAA %sAAA :%s\n" % (SERVER_NUMERIC, BOT_NAME, boot_time, BOT_NAME, BOT_HOST, BOT_MODE, SERVER_NUMERIC, BOT_DESC))
-print("[WRITE]: %s N %s 1 %d %s %s %s AAAAAA %sAAA :%s" % (SERVER_NUMERIC, BOT_NAME, boot_time, SERVER_NUMERIC, BOT_HOST, BOT_MODE, BOT_NAME, BOT_DESC))
-s.send("%s B %s %d %sAAA:o\n" % (SERVER_NUMERIC, DEBUG_CHANNEL, boot_time, SERVER_NUMERIC))
-print("[WRITE]: %s B %s %d %sAAA:o" % (SERVER_NUMERIC, DEBUG_CHANNEL, boot_time, SERVER_NUMERIC))
-s.send("%sAAA M %s +o %sAAA %d\n" % (SERVER_NUMERIC, DEBUG_CHANNEL, SERVER_NUMERIC, boot_time)) # Unless our server is U-Lined, this won't work #
-print("[WRITE]: %sAAA M %s +o %sAAA %d" % (SERVER_NUMERIC, DEBUG_CHANNEL, SERVER_NUMERIC, boot_time))
-s.send("%s EB\n" % (SERVER_NUMERIC))
-print("[WRITE]: %s EB" % (SERVER_NUMERIC))
+config.s.send("PASS %s\n" % (config.SERVER_PASS))
+print("[WRITE]: PASS %s" % (config.SERVER_PASS))
+config.s.send("SERVER %s %s %d %d J10 %s]]] :%s\n" % (config.SERVER_HOST_NAME, config.HOPS, boot_time, boot_time, config.SERVER_NUMERIC, config.SERVER_DESCRIPTION))
+print("[WRITE]: SERVER %s %s %d %d J10 %s]]] :%s" % (config.SERVER_HOST_NAME, config.HOPS, boot_time, boot_time, config.SERVER_NUMERIC, config.SERVER_DESCRIPTION))
+config.s.send("%s N %s 1 %d %s %s %s AAAAAA %sAAA :%s\n" % (config.SERVER_NUMERIC, config.BOT_NAME, boot_time, config.BOT_NAME, config.BOT_HOST, config.BOT_MODE, config.SERVER_NUMERIC, config.BOT_DESC))
+print("[WRITE]: %s N %s 1 %d %s %s %s AAAAAA %sAAA :%s" % (config.SERVER_NUMERIC, config.BOT_NAME, boot_time, config.SERVER_NUMERIC, config.BOT_HOST, config.BOT_MODE, config.BOT_NAME, config.BOT_DESC))
+config.s.send("%s B %s %d %sAAA:o\n" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, boot_time, config.SERVER_NUMERIC))
+print("[WRITE]: %s B %s %d %sAAA:o" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, boot_time, config.SERVER_NUMERIC))
+config.s.send("%sAAA M %s +o %sAAA %d\n" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, config.SERVER_NUMERIC, boot_time)) # Unless our server is U-Lined, this won't work #
+print("[WRITE]: %sAAA M %s +o %sAAA %d" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, config.SERVER_NUMERIC, boot_time))
+config.s.send("%s EB\n" % (config.SERVER_NUMERIC))
+print("[WRITE]: %s EB" % (config.SERVER_NUMERIC))
 readbuffer = ""
 try:
     if uplinkid is False or uplinkid == "":
@@ -55,7 +54,7 @@ except NameError:
         complete = 0
 
 while 1:
-    readbuffer=readbuffer + s.recv(32768)
+    readbuffer=readbuffer + config.s.recv(32768)
     temp=string.split(readbuffer, "\n")
     readbuffer=temp.pop()
 
@@ -86,8 +85,8 @@ while 1:
 
         # Acknowldge the netburst #
         if(line[0] == uplinkid and line[1] == "EB"):
-            s.send("%s EA\n" % (SERVER_NUMERIC))
-            print("[WRITE]: %s EA" % (SERVER_NUMERIC))
+            config.s.send("%s EA\n" % (config.SERVER_NUMERIC))
+            print("[WRITE]: %s EA" % (config.SERVER_NUMERIC))
             complete = 1
 
         # Check for ID collisons #
@@ -98,11 +97,11 @@ while 1:
 
         # Keep alive stuff #
         if(line[0] == uplinkid and line[1] == "Z"):
-            s.send("%s G :%s\n" % (SERVER_NUMERIC, SERVER_HOST_NAME))
-            print("[WRITE]: %s G :%s" % (SERVER_NUMERIC, SERVER_HOST_NAME))
+            config.s.send("%s G :%s\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME))
+            print("[WRITE]: %s G :%s" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME))
         if(line[0] == uplinkid and line[1] == "G"):
-            s.send("%s Z %s %s 0 %s\n" % (SERVER_NUMERIC, SERVER_HOST_NAME, line[2][1:], line[4]))
-            print("[WRITE]: %s Z %s %s 0 %s" % (SERVER_NUMERIC, SERVER_HOST_NAME, line[2][1:], line[4]))
+            config.s.send("%s Z %s %s 0 %s\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, line[2][1:], line[4]))
+            print("[WRITE]: %s Z %s %s 0 %s" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, line[2][1:], line[4]))
 
         # If we were squit, then abandon ship #
         if(line[1] == "SQ" and line[2] == uplinkname):
@@ -111,7 +110,7 @@ while 1:
 
         # Get incomming connections #
         if(line[1] == "N"):
-            if (SCAN_ON_BURST == 1):
+            if (config.SCAN_ON_BURST == 1):
                 newip = Process(target=DNSBL, args=(line[6], line[2]))
                 newip.start()
             else:
@@ -120,5 +119,5 @@ while 1:
                     newip.start()
 
         # Commands (efficienize me) #
-        if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (SERVER_NUMERIC)):
+        if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (config.SERVER_NUMERIC)):
             privmsg(userlist, line)

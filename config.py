@@ -1,5 +1,7 @@
-import yaml
+import psycopg2
+import socket
 import sys
+import yaml
 try:
     with open('config.yaml', 'r') as f:
         conf = yaml.load(f)
@@ -49,3 +51,11 @@ except IOError:
 except KeyError:
     print "[CONFIG ERROR]: Your config file is incomplete; Please recopy config.yaml.example and rebase your settings from there."
     sys.exit()
+
+pgconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+cur = pgconn.cursor()
+# Have cursor dedicated for settings look ups #
+pgconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+curauto = pgconnauto.cursor()
+
+s=socket.socket()

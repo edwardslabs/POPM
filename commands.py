@@ -3,10 +3,11 @@ import time
 import string
 import signal
 import sys
-from config import *
+import config
+global config
+global sys
 from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say
-from server import *
 
 def privmsg(userlist, line):
     channel = False
@@ -16,7 +17,7 @@ def privmsg(userlist, line):
         channel = True
         channel_target = line[2]
         target = line[0]
-    if command[:1] == PREFIX and channel:
+    if command[:1] == config.PREFIX and channel:
         command = command[1:]
 
     # Commands list #
@@ -45,16 +46,12 @@ def privmsg(userlist, line):
         command_unknown(target, userlist, line)
 
 def gline_http(ip, timewo, timew, port):
-    from server import *
-    from config import *
-    s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, port))
-    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, port))
+    config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
+    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
 
 def gline_dnsbl(ip, timewo, timew, blacklist):
-    from server import *
-    from config import *
-    s.send("%s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, blacklist))
-    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, blacklist))
+    config.s.send("%s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
+    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
 
 def get_threads(target, userlist, line):
     if access_level(target, userlist) > 750:
@@ -175,8 +172,6 @@ def emote(target, channel, userlist, line):
         serv_notice(target, "You lack access to this command.")
 
 def die(target, userlist, line):
-    import sys
-    from server import *
     try:
         if line[4] != False:
             arlen = len(line)
@@ -190,9 +185,9 @@ def die(target, userlist, line):
                 i += 1
             account = get_acc(target, userlist)
             if access_level(target, userlist) >= get_die():
-                s.send("%sAAA Q :%s\n" % (SERVER_NUMERIC, newstring))
-                s.send("%s SQ %s 0 :[%s (by %s)]\n" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
-                print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (SERVER_NUMERIC, SERVER_HOST_NAME, newstring, account))
+                config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
+                config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+                print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
                 sys.exit(0)
             else:
                 serv_notice(target, "You lack access to this command")
@@ -246,69 +241,67 @@ def command_unknown(target, userlist, line):
         serv_notice(target, "Unknown command %s." % (newstring[1:]))
 
 def serv_notice(target, message):
-    from server import *
-    s.send("%sAAA O %s :%s\n" % (SERVER_NUMERIC, target, message))
+    config.s.send("%sAAA O %s :%s\n" % (config.SERVER_NUMERIC, target, message))
 
 def serv_privmsg(target, message):
-    from server import *
-    s.send("%sAAA P %s :%s\n" % (SERVER_NUMERIC, target, message))
+    config.s.send("%sAAA P %s :%s\n" % (config.SERVER_NUMERIC, target, message))
 
 def get_help(target, userlist, line):
     if access_level(target, userlist) > 0:
         try:
             if line[4] != False:
                 if line[4].lower() == "threads":
-                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
-                    serv_notice(target, "THREADS displays the current number of worker threads by %s." % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                    serv_notice(target, "THREADS displays the current number of worker threads by %s." % (config.BOT_NAME))
                     serv_notice(target, "These threads are spawned when an incoming connection is recieved")
                     serv_notice(target, "to check for proxys on the remote host.")
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "access":
-                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                     serv_notice(target, "ACCESS is a multi-functional command. Access has the ability to")
-                    serv_notice(target, "check your access with %s, check other's access, add other users to %s" % (BOT_NAME, BOT_NAME))
-                    serv_notice(target, "and to remove users access to %s. At this time, only root users may" % (BOT_NAME))
-                    serv_notice(target, "add or remove other users from %s." % (BOT_NAME))
+                    serv_notice(target, "check your access with %s, check other's access, add other users to %s" % (config.BOT_NAME, config.BOT_NAME))
+                    serv_notice(target, "and to remove users access to %s. At this time, only root users may" % (config.BOT_NAME))
+                    serv_notice(target, "add or remove other users from %s." % (config.BOT_NAME))
                     serv_notice(target, "Note: To remove a users access, set their access to -1")
                     serv_notice(target, "Examples:")
-                    serv_notice(target, "/msg %s ACCESS foobar" % (BOT_NAME))
-                    serv_notice(target, "/msg %s ACCESS *" % (BOT_NAME))
-                    serv_notice(target, "/msg %s ACCESS foo 950" % (BOT_NAME))
-                    serv_notice(target, "/msg %s ACCESS bar -1" % (BOT_NAME))
+                    serv_notice(target, "/msg %s ACCESS foobar" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s ACCESS *" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s ACCESS foo 950" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s ACCESS bar -1" % (config.BOT_NAME))
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "die":
-                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
-                    serv_notice(target, "DIE causes %s to quit and POPM to disconnect from %s." % (BOT_NAME, NETWORK_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                    serv_notice(target, "DIE causes %s to quit and POPM to disconnect from %s." % (config.BOT_NAME, config.NETWORK_NAME))
                     serv_notice(target, "This will completly stop the program and will have to")
                     serv_notice(target, "be restarted locally. DIE takes arguments for the QUIT message")
                     serv_notice(target, "and SQUIT reason. Note: When you use DIE, your NickServ account")
                     serv_notice(target, "name will be attached to the SQUIT message.")
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "say":
-                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
-                    serv_notice(target, "/msg %s SAY <#channel|nick> <text>" % (BOT_NAME))
-                    serv_notice(target, "Makes %s send a message to a specified nick/channel." % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s SAY <#channel|nick> <text>" % (config.BOT_NAME))
+                    serv_notice(target, "Makes %s send a message to a specified nick/channel." % (config.BOT_NAME))
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "emote":
-                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
-                    serv_notice(target, "/msg %s EMOTE <#channel|nick> <text>" % (BOT_NAME))
-                    serv_notice(target, "Makes %s do the equivelent of /me to the specified nick/channel." % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s EMOTE <#channel|nick> <text>" % (config.BOT_NAME))
+                    serv_notice(target, "Makes %s do the equivelent of /me to the specified nick/channel." % (config.BOT_NAME))
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "set":
-                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                     serv_notice(target, "SET on its own will display the current configuration")
-                    serv_notice(target, "for %s. Note, that the SET command can only be used by" % (BOT_NAME))
+                    serv_notice(target, "for %s. Note, that the SET command can only be used by" % (config.BOT_NAME))
                     serv_notice(target, "users with SET access. SET can also take arguments.")
-                    serv_notice(target, "Below is a list of items you can set in %s" % (BOT_NAME))
+                    serv_notice(target, "Below is a list of items you can set in %s" % (config.BOT_NAME))
                     serv_notice(target, "To change any of the settings, just type")
-                    serv_notice(target, "/msg %s SET paramter value" % (BOT_NAME))
+                    serv_notice(target, "/msg %s SET paramter value" % (config.BOT_NAME))
                     serv_notice(target, "")
                     serv_notice(target, "Examples:")
-                    serv_notice(target, "/msg %s SET DNSBL off" % (BOT_NAME))
-                    serv_notice(target, "/msg %s SET HTTP on" % (BOT_NAME))
-                    serv_notice(target, "/msg %s SET SOCKS on" % (BOT_NAME))
-                    serv_notice(target, "/msg %s SET SETTERS 900" % (BOT_NAME))
-                    serv_notice(target, "/msg %s SET DIE 1000" % (BOT_NAME))
+                    serv_notice(target, "/msg %s SET DNSBL off" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s SET HTTP on" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s SET SOCKS on" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s SET SETTERS 900" % (config.BOT_NAME))
+                    serv_notice(target, "/msg %s SET DIE 1000" % (config.BOT_NAME))
                     serv_notice(target, "")
                     serv_notice(target, "ON/OFF Set Options:")
                     serv_notice(target, "http")
@@ -324,13 +317,13 @@ def get_help(target, userlist, line):
                     serv_notice(target, "%s is an unknown command to me." % (line[4]))
         except IndexError:
             if access_level(target, userlist) > 0:
-                serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (BOT_NAME))
-                serv_notice(target, "%s gives authorized users extra control over the proxy monitoring system." % (BOT_NAME))
+                serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                serv_notice(target, "%s gives authorized users extra control over the proxy monitoring system." % (config.BOT_NAME))
                 serv_notice(target, "General commands:")
                 serv_notice(target, "Threads:        Shows current number of threads")
                 serv_notice(target, "Access:         Shows access for accounts")
                 serv_notice(target, "Set:            Sets the configuration for POPM")
-                serv_notice(target, "Say:            Makes %s talk" % (BOT_NAME))
-                serv_notice(target, "Emote:          Makes %s do the equivelent of /me" % (BOT_NAME))
-                serv_notice(target, "Die:            Terminates POPM and disconnects from %s" % (NETWORK_NAME))
+                serv_notice(target, "Say:            Makes %s talk" % (config.BOT_NAME))
+                serv_notice(target, "Emote:          Makes %s do the equivelent of /me" % (config.BOT_NAME))
+                serv_notice(target, "Die:            Terminates POPM and disconnects from %s" % (config.NETWORK_NAME))
                 serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")

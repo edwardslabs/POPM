@@ -3,18 +3,12 @@ import socket
 import socks
 import ssl
 import string
-import signal
 import time
 import dns.resolver
-import psycopg2
-import access
-import server
-from config import *
-from server import *
-from bot import *
-from commands import gline_http
-from threading import Thread
-from thread import start_new_thread, allocate_lock
+import config
+from multiprocessing import Process
+global config
+global Process
 
 def isIP(address):
     #Takes a string and returns a status if it matches
@@ -38,7 +32,7 @@ def isIP(address):
     return ip
 
 def DNSBL(ip, nick):
-    from commands import gline_dnsbl
+    from settings import get_dnsl_value
     bll = ["tor.dan.me.uk", "rbl.efnetrbl.org", "dnsbl.proxybl.org", "dnsbl.dronebl.org", "tor.efnet.org"]
     try:
         if isIP(ip) is False:
@@ -52,7 +46,7 @@ def DNSBL(ip, nick):
 
     rawip = str(rawip)
 
-    if ENABLE_DNSBL == 0:
+    if get_dnsl_value() == 0:
         http_connect(rawip)
     else:
         print "[SCANNING]: DNSBL scan on " + str(rawip)
@@ -65,7 +59,7 @@ def DNSBL(ip, nick):
             try:
                 answers = dns.resolver.query(newstring,'A')
                 if answers != False:
-                    gline_dnsbl(ip, int(time.time()), int(time.time()) + DURATION, blacklist)
+                    gline_dnsbl(ip, int(time.time()), int(time.time()) + config.DURATION, blacklist)
                     contrue = 0
                     break
             except dns.resolver.NXDOMAIN:
@@ -76,8 +70,8 @@ def DNSBL(ip, nick):
             http_connect(rawip)
 
 def http_connect_threads(ip, port):
-    global tested, contrue
     from commands import gline_http
+    global tested, contrue
     tcp=socket.socket()
     tcp.settimeout(2)
     portbuf = ""
@@ -90,16 +84,15 @@ def http_connect_threads(ip, port):
             inttime2 = int(time.time())
             data = tcp.recv(1024)
             if data is not False and "HTTP/1.0 200 OK" in data:
-                gline_http(ip, int(time.time()), int(time.time()) + DURATION, port)
+                gline_http(ip, int(time.time()), int(time.time()) + config.DURATION, port)
                 tcp.close()
                 break
     except socket.error, v:
         pass
 
 def https_connect_threads(ip, port):
-    global tested, contrue
-    from thread import start_new_thread, allocate_lock
     from commands import gline_http
+    global tested, contrue
     tcps=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     ssl_sock = ssl.wrap_socket(tcps)
     ssl_sock.settimeout(2)
@@ -113,17 +106,17 @@ def https_connect_threads(ip, port):
             inttime2 = int(time.time())
             data = ssl_sock.recv(1024)
             if data is not False and "HTTP/1.0 200 OK" in data:
-                gline_http(ip, int(time.time()), int(time.time()) + DURATION, port)
+                gline_http(ip, int(time.time()), int(time.time()) + config.DURATION, port)
                 ssl_sock.close()
                 break
     except socket.error, v:
         pass
 
 def http_connect(ip):
-    from thread import start_new_thread, allocate_lock
-    from multiprocessing import Process, Queue
+    from commands import gline_http
+    from settings import get_http_value
     global tested
-    if ENABLE_HTTP == 0:
+    if get_http_value() == 0:
         sockscheck(ip)
     else:
         global num_threads, thread_started, contrue
@@ -140,8 +133,8 @@ def http_connect(ip):
         sockscheck(ip)
 
 def sockscheck(ip):
-    from multiprocessing import Process, Queue
-    if ENABLE_SOCKS != 0:
+    from settings import get_socks_value
+    if get_socks_value() != 0:
         ports = [1080,1075,10000,10080,10099,10130,10242,10777,1025,1026,1027,1028,1029,1030,1031,1032,1033,1039,1050,1066,1081,1098,11011,11022,11033,11055,11171,1122,11225,1180,1182,1200,1202,1212,1234,12654,1337,14841,16591,17327,1813,18888,1978,1979,19991,2000,21421,22277,2280,24971,24973,25552,25839,26905,28882,29992,3127,3128,32167,3330,3380,34610,3801,3867,40,4044,41080,41379,43073,43341,443,44548,4471,43371,44765,4914,49699,5353,559,58,6000,62385,63808,6551,6561,6664,6748,6969,7007,7080,8002,8009,8020,8080,8085,8111,8278,8751,8888,9090,9100,9988,9999,59175,5001,19794]
 
         def check_socks(ip, port):
