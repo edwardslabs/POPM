@@ -57,7 +57,6 @@ def gline_dnsbl(ip, timewo, timew, blacklist):
     print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (SERVER_NUMERIC, ip, DURATION, timewo, timew, NETWORK_NAME, blacklist))
 
 def get_threads(target, userlist, line):
-    from server import *
     if access_level(target, userlist) > 750:
         try:
             serv_notice(target, "There are %s threads running" % (multiprocessing.cpu_count()))
@@ -201,7 +200,6 @@ def die(target, userlist, line):
         serv_notice(target, "Insufficient paramaters for DIE")
 
 def do_set(target, userlist, line):
-    from server import *
     try:
         if line[4] != False:
             if access_level(target, userlist) >= get_level_req("access_set"):
@@ -235,7 +233,6 @@ def do_set(target, userlist, line):
             serv_notice(target, "You lack access to this command.")
 
 def command_unknown(target, userlist, line):
-    from server import *
     if access_level(target, userlist) > 0:
         arlen = len(line)
         newstring = ""
@@ -257,7 +254,6 @@ def serv_privmsg(target, message):
     s.send("%sAAA P %s :%s\n" % (SERVER_NUMERIC, target, message))
 
 def get_help(target, userlist, line):
-    from server import *
     if access_level(target, userlist) > 0:
         try:
             if line[4] != False:
