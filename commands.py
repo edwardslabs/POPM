@@ -55,6 +55,14 @@ def gline_dnsbl(ip, timewo, timew, blacklist):
     config.s.send("%s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
     print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
 
+def gline_socks(ip, timewo, timew, port, version):
+    if version == 1:
+        typev = 4
+    else:
+        typev = 5
+    config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%d/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, typev, port))
+    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%d/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, typev, port))
+
 def get_threads(target, userlist, line):
     if access_level(target, userlist) > 750:
         try:
