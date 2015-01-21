@@ -15,6 +15,10 @@ def privmsg(userlist, line):
         channel = True
         channel_target = line[2]
         target = line[0]
+
+    if command[:1] != config.PREFIX and channel:
+        return
+
     if command[:1] == config.PREFIX and channel:
         command = command[1:]
 
