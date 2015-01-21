@@ -123,7 +123,7 @@ def get_say():
     value = config.cur.fetchone()
     return value[0]
 
-def get_dnsl_value():
+def get_dnsbl_value():
     config.curauto.execute("SELECT enable_dnsbl FROM settings")
     value = config.curauto.fetchone()
     return value[0]

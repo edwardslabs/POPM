@@ -5,7 +5,7 @@ import signal
 import sys
 import config
 from proxy import DNSBL
-from settings import is_settable, get_set, update_settings, get_set_value
+from settings import is_settable, get_set, update_settings, get_set_value, get_dnsbl_value, get_http_value, get_socks_value
 from commands import privmsg
 from multiprocessing import Process, Queue
 
@@ -111,11 +111,11 @@ while 1:
         # Get incomming connections #
         if(line[1] == "N"):
             if (config.SCAN_ON_BURST == 1):
-                newip = Process(target=DNSBL, args=(line[6], line[2]))
+                newip = Process(target=DNSBL, args=(line[6], line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                 newip.start()
             else:
                 if (complete == 1):
-                    newip = Process(target=DNSBL, args=(line[6], line[2]))
+                    newip = Process(target=DNSBL, args=(line[6], line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                     newip.start()
 
         # Commands (efficienize me) #

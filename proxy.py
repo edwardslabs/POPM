@@ -31,8 +31,7 @@ def isIP(address):
         pass
     return ip
 
-def DNSBL(ip, nick):
-    from settings import get_dnsl_value
+def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE):
     bll = ["tor.dan.me.uk", "rbl.efnetrbl.org", "dnsbl.proxybl.org", "dnsbl.dronebl.org", "tor.efnet.org"]
     try:
         if isIP(ip) is False:
@@ -46,8 +45,8 @@ def DNSBL(ip, nick):
 
     rawip = str(rawip)
 
-    if get_dnsl_value() == 0:
-        http_connect(rawip)
+    if DNSTRUE == 0:
+        http_connect(rawip, HTTPTRUE, SOCKSTRUE)
     else:
         print "[SCANNING]: DNSBL scan on " + str(rawip)
         newip = rawip.split(".")
@@ -67,7 +66,7 @@ def DNSBL(ip, nick):
                 continue
 
         if contrue == 5:
-            http_connect(rawip)
+            http_connect(rawip, HTTPTRUE, SOCKSTRUE)
 
 def http_connect_threads(ip, port):
     from commands import gline_http
@@ -112,12 +111,11 @@ def https_connect_threads(ip, port):
     except socket.error, v:
         pass
 
-def http_connect(ip):
+def http_connect(ip, HTTPTRUE, SOCKSTRUE):
     from commands import gline_http
-    from settings import get_http_value
     global tested
-    if get_http_value() == 0:
-        sockscheck(ip)
+    if HTTPTRUE == 0:
+        sockscheck(ip, SOCKSTRUE)
     else:
         global num_threads, thread_started, contrue
         testhost = "blindsighttf2.com:80"
@@ -127,14 +125,13 @@ def http_connect(ip):
         for newport in ports:
             http = Process(target=http_connect_threads, args=(ip, newport))
             http.start()
-            http = Process(target=https_connect_threads, args=(ip, newport))
-            http.start()
+            https = Process(target=https_connect_threads, args=(ip, newport))
+            https.start()
 
-        sockscheck(ip)
+        sockscheck(ip, SOCKSTRUE)
 
-def sockscheck(ip):
-    from settings import get_socks_value
-    if get_socks_value() != 0:
+def sockscheck(ip, SOCKSTRUE):
+    if SOCKSTRUE != 0:
         ports = [1080,1075,10000,10080,10099,10130,10242,10777,1025,1026,1027,1028,1029,1030,1031,1032,1033,1039,1050,1066,1081,1098,11011,11022,11033,11055,11171,1122,11225,1180,1182,1200,1202,1212,1234,12654,1337,14841,16591,17327,1813,18888,1978,1979,19991,2000,21421,22277,2280,24971,24973,25552,25839,26905,28882,29992,3127,3128,32167,3330,3380,34610,3801,3867,40,4044,41080,41379,43073,43341,443,44548,4471,43371,44765,4914,49699,5353,559,58,6000,62385,63808,6551,6561,6664,6748,6969,7007,7080,8002,8009,8020,8080,8085,8111,8278,8751,8888,9090,9100,9988,9999,59175,5001,19794]
 
         def check_socks(ip, port):
@@ -159,3 +156,4 @@ def sockscheck(ip):
             socksc.start()
 
         return
+    return
