@@ -3,7 +3,8 @@ import string
 import sys
 import config
 from access import show_access, get_level_req, update_access, get_acc, access_level
-from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say
+from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say, addexempt, delexempt, get_modify_exempt, get_view_exempt, exemption_data
+from proxy import isIP
 global config
 global sys
 
@@ -43,6 +44,9 @@ def privmsg(userlist, line):
 
     elif (command == "emote"):
         emote(target, channel, userlist, line)
+
+    elif (command == "exempt"):
+        exempt(target, userlist, line)
 
     elif(not channel):
         command_unknown(target, userlist, line)
@@ -96,6 +100,111 @@ def get_access(target, userlist, line):
         except IndexError:
             if access_level(target, userlist) > 0:
                 serv_notice(target, "Account %s has access %s." % (get_acc(target, userlist), access_level(target, userlist)))
+
+def exempt(target, userlist, line):
+    try:
+        if line[4].lower() == "add":
+            if access_level(target, userlist) >= get_modify_exempt():
+                try:
+                    if isIP(line[5]):
+                        theip = line[5]
+                        try:
+                            if line[6][-1] == "s":
+                                typetime = 1
+                            elif line[6][-1] == "m":
+                                typetime = 2
+                            elif line[6][-1] == "h":
+                                typetime = 3
+                            elif line[6][-1] == "d":
+                                typetime = 4
+                            elif line[6][-1] == "w":
+                                typetime = 5
+                            elif line[6][-1] == "M":
+                                typetime = 6
+                            elif line[6][-1] == "y":
+                                typetime = 7
+                            elif line[6] == "0":
+                                typetime = 8
+                            else:
+                                #print "recieved %s" % (line[6])
+                                serv_notice(target, "Invalid time format")
+                                return
+                            try:
+                                if typetime != 8:
+                                    newdigit = int(line[6][:-1])
+                                else:
+                                    newdigit = 0
+                                if isinstance(newdigit, int):
+                                    newtime = 0
+                                    perma = False
+                                    if typetime == 1:
+                                        newtime = newdigit
+                                    elif typetime == 2:
+                                        newtime = newdigit * 60
+                                    elif typetime == 3:
+                                        newtime = newdigit * 3600
+                                    elif typetime == 4:
+                                        newtime = newdigit * 86400
+                                    elif typetime == 5:
+                                        newtime = newdigit * 604800
+                                    elif typetime == 6:
+                                        newtime = newdigit * 2628000
+                                    elif typetime == 7:
+                                        newtime = newdigit * 31536000
+                                    elif typetime == 8:
+                                        newtime = 0
+                                        perma = True
+                                    account = get_acc(target, userlist)
+                                    epoch = int(time.time())
+                                    expire = epoch + newtime
+                                    #print("%s = %s + %s" % (expire, epoch, newtime))
+                                    try:
+                                        if line[7] != False:
+                                            arlen = len(line)
+                                            i = 7
+                                            newstring = ""
+                                            while i < arlen:
+                                                if newstring == "":
+                                                    newstring = line[i]
+                                                else:
+                                                    newstring = newstring + " " + line[i]
+                                                i += 1
+                                    except IndexError:
+                                        newstring = "No reason specified"
+                                    addexempt(target, account, str(theip), epoch, expire, perma, newstring)
+                                    #print "IP: " + str(theip) + " .::. account: " + str(account) + " .::. epoch " + str(epoch) + " .::. expire: " + str(expire) + " .::. perma: " + str(perma) + " .::. reason: " + str(newstring) 
+                                else:
+                                    serv_notice(target, "Invalid time format")
+                            except ValueError:
+                                serv_notice(target, "Invalid time format")
+                        except IndexError:
+                            serv_notice(target, "You must provide time for the exemption to be active for")
+                    else:
+                        serv_notice(target, "You must provide a valid IP address")
+                except IndexError:
+                    serv_notice(target, "You must provide an IP address to exempt")
+            else:
+                serv_notice(target, "You lack access to this command.")
+        elif line[4].lower() == "del":
+            if access_level(target, userlist) >= get_modify_exempt():
+                try:
+                    if isIP(line[5]):
+                        theip = line[5]
+                        account = get_acc(target, userlist)
+                        delexempt(target, account, theip)
+                    else:
+                        serv_notice(target, "You must provide a valid IP address")
+                except IndexError:
+                    serv_notice(target, "You must provide a valid IP address")
+            else:
+                serv_notice(target, "You lack access to this command.")
+        elif line[4].lower() == "list":
+            if access_level(target, userlist) >= get_view_exempt():
+                exemption_data(target)
+            else:
+                serv_notice(target, "You lack access to this command.")
+    except IndexError:
+        serv_notice(target, "Not enough paramaters for EXEMPT")
 
 def say(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():
@@ -322,6 +431,29 @@ def get_help(target, userlist, line):
                     serv_notice(target, "setters")
                     serv_notice(target, "say")
                     serv_notice(target, "emote")
+                    serv_notice(target, "exempt_mod")
+                    serv_notice(target, "exempt_view")
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+                elif line[4].lower() == "exempt":
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                    serv_notice(target, "EXEMPT is the command to view, add, remove, and modify")
+                    serv_notice(target, "IP addresses that should be exempt from scanning. This")
+                    serv_notice(target, "command can be broken down in to the following:")
+                    serv_notice(target, "Viewing the exemption list:")
+                    serv_notice(target, "/msg %s EXEMPT LIST" % (config.BOT_NAME))
+                    serv_notice(target, "Adding exemptions:")
+                    serv_notice(target, "/msg %s EXEMPT ADD 127.0.0.1 30d Services should not be scanned." % (config.BOT_NAME))
+                    serv_notice(target, "Removing exemptions:")
+                    serv_notice(target, "/msg %s EXEMPT DEL 127.0.0.1" % (config.BOT_NAME))
+                    serv_notice(target, "")
+                    serv_notice(target, "Notes:")
+                    serv_notice(target, "%s will take time arguments such as 1m for 1 minute," % (config.BOT_NAME))
+                    serv_notice(target, "1h for 1 hour, 1M for 1 month, 20d for 20 days, 1y for 1 year,")
+                    serv_notice(target, "etc. To add a perminant exemption, just use a 0. Example:")
+                    serv_notice(target, "/msg %s EXEMPT ADD 127.0.0.1 0 Never scan this address." % (config.BOT_NAME))
+                    serv_notice(target, "It is also important to remember that there are two different")
+                    serv_notice(target, "access levels between viewing exemptions and modifying the list.")
+                    serv_notice(target, "See HELP SET for more details.")
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 else:
                     serv_notice(target, "%s is an unknown command to me." % (line[4]))
@@ -331,6 +463,7 @@ def get_help(target, userlist, line):
                 serv_notice(target, "%s gives authorized users extra control over the proxy monitoring system." % (config.BOT_NAME))
                 serv_notice(target, "General commands:")
                 serv_notice(target, "Threads:        Shows current number of threads")
+                serv_notice(target, "Exempt:         Views/Modifys the exemption list")
                 serv_notice(target, "Access:         Shows access for accounts")
                 serv_notice(target, "Set:            Sets the configuration for POPM")
                 serv_notice(target, "Say:            Makes %s talk" % (config.BOT_NAME))

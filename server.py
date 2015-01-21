@@ -4,8 +4,8 @@ import string
 import signal
 import sys
 import config
-from proxy import DNSBL
-from settings import is_settable, get_set, update_settings, get_set_value, get_dnsbl_value, get_http_value, get_socks_value
+from proxy import DNSBL, getTrueIP
+from settings import is_settable, get_set, update_settings, get_set_value, get_dnsbl_value, get_http_value, get_socks_value, isExempt, checkexpired
 from commands import privmsg
 from multiprocessing import Process, Queue
 
@@ -110,13 +110,16 @@ while 1:
 
         # Get incomming connections #
         if(line[1] == "N"):
-            if (config.SCAN_ON_BURST == 1):
-                newip = Process(target=DNSBL, args=(line[6], line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
-                newip.start()
-            else:
-                if (complete == 1):
-                    newip = Process(target=DNSBL, args=(line[6], line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
+            trueIP = getTrueIP(line[6])
+            checkexpired()
+            if not isExempt(str(trueIP)):
+                if (config.SCAN_ON_BURST == 1):
+                    newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                     newip.start()
+                else:
+                    if (complete == 1):
+                        newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
+                        newip.start()
 
         # Commands (efficienize me) #
         if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (config.SERVER_NUMERIC)):

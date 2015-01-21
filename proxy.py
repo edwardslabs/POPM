@@ -31,6 +31,18 @@ def isIP(address):
         pass
     return ip
 
+def getTrueIP(ip):
+    try:
+        if isIP(ip) is False:
+            answers = dns.resolver.query(ip,'A')
+            for server in answers:
+                rawip = server
+            return rawip
+        else:
+            return ip
+    except dns.resolver.NXDOMAIN:
+        return ip
+
 def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE):
     bll = ["tor.dan.me.uk", "rbl.efnetrbl.org", "dnsbl.proxybl.org", "dnsbl.dronebl.org", "tor.efnet.org"]
     try:
