@@ -36,6 +36,9 @@ def privmsg(userlist, line):
     elif(command == "die"):
         die(target, userlist, line)
 
+    elif(command == "restart"):
+        restart(target, userlist, line)
+
     elif(command == "set"):
         do_set(target, userlist, line)
 
@@ -312,6 +315,31 @@ def die(target, userlist, line):
     except IndexError:
         serv_notice(target, "Insufficient paramaters for DIE")
 
+def restart(target, userlist, line):
+    import os
+    try:
+        if line[4] != False:
+            arlen = len(line)
+            newstring = ""
+            i = 4
+            while i < arlen:
+                if newstring == "":
+                    newstring = line[i]
+                else:
+                    newstring = newstring + " " + line[i]
+                i += 1
+            account = get_acc(target, userlist)
+            if access_level(target, userlist) >= get_die():
+                config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
+                config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+                print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+                python = sys.executable
+                os.execl(python, python, * sys.argv)
+            else:
+                serv_notice(target, "You lack access to this command")
+    except IndexError:
+        serv_notice(target, "Insufficient paramaters for RESTART")
+
 def do_set(target, userlist, line):
     try:
         if line[4] != False:
@@ -395,6 +423,13 @@ def get_help(target, userlist, line):
                     serv_notice(target, "and SQUIT reason. Note: When you use DIE, your NickServ account")
                     serv_notice(target, "name will be attached to the SQUIT message.")
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+                elif line[4].lower() == "restart":
+                    serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                    serv_notice(target, "RESTART causes POPM to restart while rereading its config.")
+                    serv_notice(target, "RESTART takes arguments for the QUIT message and SQUIT reason.")
+                    serv_notice(target, "Note: When you use RESTART, your NickServ account")
+                    serv_notice(target, "name will be attached to the SQUIT message.")
+                    serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "say":
                     serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                     serv_notice(target, "/msg %s SAY <#channel|nick> <text>" % (config.BOT_NAME))
@@ -467,5 +502,6 @@ def get_help(target, userlist, line):
                 serv_notice(target, "Set:            Sets the configuration for POPM")
                 serv_notice(target, "Say:            Makes %s talk" % (config.BOT_NAME))
                 serv_notice(target, "Emote:          Makes %s do the equivelent of /me" % (config.BOT_NAME))
+                serv_notice(target, "Restart:        Causes POPM to restart")
                 serv_notice(target, "Die:            Terminates POPM and disconnects from %s" % (config.NETWORK_NAME))
                 serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
