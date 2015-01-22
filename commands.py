@@ -2,7 +2,7 @@ import time
 import string
 import sys
 import config
-from access import show_access, get_level_req, update_access, get_acc, access_level
+from access import show_access, get_level_req, update_access, get_acc, access_level, my_access
 from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say, addexempt, delexempt, get_modify_exempt, get_view_exempt, exemption_data
 from proxy import isIP
 global config
@@ -85,7 +85,7 @@ def get_access(target, userlist, line):
             except ValueError:
                 serv_notice(target, "Access level must be an integer.")
                 return
-            if access_level(target, userlist) == 1000:
+            if my_access(target, userlist) == 1000:
                 if access <= 1000:
                     update_access(line[4], access, target, userlist)
                 else:
@@ -95,10 +95,10 @@ def get_access(target, userlist, line):
     except IndexError:
         try:
             if line[4] != False:
-                if access_level(target, userlist) > 0:
+                if my_access(target, userlist) > 0:
                     show_access(line[4], target)
         except IndexError:
-            if access_level(target, userlist) > 0:
+            if my_access(target, userlist) > 0:
                 serv_notice(target, "Account %s has access %s." % (get_acc(target, userlist), access_level(target, userlist)))
 
 def exempt(target, userlist, line):

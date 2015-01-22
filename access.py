@@ -78,6 +78,26 @@ def access_level(numnick, userlist):
             authed += 1
             break
     if authed == 0:
+        return False
+    else:
+        config.cur.execute("SELECT access FROM users WHERE admin = %s", [account])
+        access = config.cur.fetchone()
+        if access is not None:
+            return access[0]
+        else:
+            return False
+
+def my_access(numnick, userlist):
+    from commands import serv_notice
+    authed = 0
+    access = 0
+    for i in userlist:
+        if numnick == i.split(":")[1]:
+            account = i.split(":")[0]
+            ircnum = i.split(":")[1]
+            authed += 1
+            break
+    if authed == 0:
         serv_notice(numnick, "You must first authenticate with NickServ.")
     else:
         config.cur.execute("SELECT access FROM users WHERE admin = %s", [account])

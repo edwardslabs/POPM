@@ -115,6 +115,7 @@ while 1:
         # Get incomming connections #
         if(line[1] == "N"):
             trueIP = getTrueIP(line[6])
+            trueIP = str(trueIP)
             checkexpired()
             if not isExempt(str(trueIP)):
                 if (config.SCAN_ON_BURST == 1):
