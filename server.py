@@ -77,7 +77,7 @@ while 1:
             try:
                 if(":" in line[8]):
                     try:
-                        if line[12] != False:
+                        if line[12]:
                             userlist.append("%s:%s" % (line[8].split(":")[0], line[11]))
                     except IndexError:
                             userlist.append("%s:%s" % (line[8].split(":")[0], line[10]))
@@ -118,19 +118,17 @@ while 1:
         # Get incomming connections #
         if(line[1] == "N"):
             try:
-                if (config.SCAN_ON_BURST == 1):
-                    trueIP = getTrueIP(line[6])
-                    trueIP = str(trueIP)
+                if config.SCAN_ON_BURST == 1:
+                    trueIP = str(getTrueIP(line[6]))
                     checkexpired()
-                    if not isExempt(str(trueIP)):
+                    if not isExempt(trueIP):
                         newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                         newip.start()
                 else:
-                    if (complete == 1):
-                        trueIP = getTrueIP(line[6])
-                        trueIP = str(trueIP)
+                    if complete == 1:
+                        trueIP = str(getTrueIP(line[6]))
                         checkexpired()
-                        if not isExempt(str(trueIP)):
+                        if not isExempt(trueIP):
                             newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                             newip.start()
             except IndexError:

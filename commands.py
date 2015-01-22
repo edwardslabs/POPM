@@ -78,7 +78,7 @@ def get_threads(target, userlist, line):
 def get_access(target, userlist, line):
     from access import my_access
     try:
-        if line[5] != False:
+        if line[5]:
             try:
                 access = line[5]
                 access = int(access)
@@ -94,7 +94,7 @@ def get_access(target, userlist, line):
                 serv_notice(target, "Access modification can only be done via root (1000 access) users.")
     except IndexError:
         try:
-            if line[4] != False:
+            if line[4]:
                 if my_access(target, userlist) > 0:
                     show_access(line[4], target)
         except IndexError:
@@ -159,7 +159,7 @@ def exempt(target, userlist, line):
                                     expire = epoch + newtime
                                     #print("%s = %s + %s" % (expire, epoch, newtime))
                                     try:
-                                        if line[7] != False:
+                                        if line[7]:
                                             arlen = len(line)
                                             i = 7
                                             newstring = ""
@@ -211,9 +211,9 @@ def exempt(target, userlist, line):
 def say(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():
         try:
-            if line[4] != False:
+            if line[4]:
                 try:
-                    if line[5] != False:
+                    if line[5]:
                         arlen = len(line)
                         newstring = ""
                         if channel and line[4][:1] != "#":
@@ -253,9 +253,9 @@ def say(target, channel, userlist, line):
 def emote(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():
         try:
-            if line[4] != False:
+            if line[4]:
                 try:
-                    if line[5] != False:
+                    if line[5]:
                         arlen = len(line)
                         newstring = ""
                         if channel and line[4][:1] != "#":
@@ -294,7 +294,7 @@ def emote(target, channel, userlist, line):
 
 def die(target, userlist, line):
     try:
-        if line[4] != False:
+        if line[4]:
             arlen = len(line)
             newstring = ""
             i = 4
@@ -318,7 +318,7 @@ def die(target, userlist, line):
 def restart(target, userlist, line):
     import os
     try:
-        if line[4] != False:
+        if line[4]:
             arlen = len(line)
             newstring = ""
             i = 4
@@ -342,11 +342,11 @@ def restart(target, userlist, line):
 
 def do_set(target, userlist, line):
     try:
-        if line[4] != False:
+        if line[4]:
             if access_level(target, userlist) >= get_level_req("access_set"):
                 if is_settable(line[4]) is True:
                     try:
-                        if line[5] != False:
+                        if line[5]:
                             try:
                                 newlevel = line[5]
                                 if newlevel.lower() == "on":
@@ -373,6 +373,12 @@ def do_set(target, userlist, line):
         else:
             serv_notice(target, "You lack access to this command.")
 
+def version(target, userlist):
+    if access_level(target, userlist) >= 0:
+        import subprocess
+        commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+        serv_notice(target, "POPM authroed ")
+
 def command_unknown(target, userlist, line):
     if access_level(target, userlist) > 0:
         arlen = len(line)
@@ -395,7 +401,7 @@ def serv_privmsg(target, message):
 def get_help(target, userlist, line):
     if access_level(target, userlist) > 0:
         try:
-            if line[4] != False:
+            if line[4]:
                 if line[4].lower() == "threads":
                     serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                     serv_notice(target, "THREADS displays the current number of worker threads by %s." % (config.BOT_NAME))

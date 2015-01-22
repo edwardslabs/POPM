@@ -72,7 +72,7 @@ def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE):
             newstring = newip + "." + blacklist
             try:
                 answers = dns.resolver.query(newstring,'A')
-                if answers != False:
+                if answers:
                     gline_dnsbl(ip, int(time.time()), int(time.time()) + config.DURATION, blacklist)
                     contrue = 0
                     break
