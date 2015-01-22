@@ -61,7 +61,7 @@ def gline_dnsbl(ip, timewo, timew, blacklist):
 
 def gline_socks(ip, timewo, timew, port, version):
     config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
-    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
+    print("[WRITE][SOCKS%s_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]" % (version, config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
 
 def get_threads(target, userlist, line):
     if access_level(target, userlist) > 750:
