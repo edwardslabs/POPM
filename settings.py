@@ -7,6 +7,7 @@ def is_settable(param):
     or param == "http"
     or param == "socks"
     or param == "die"
+    or param == "restart"
     or param == "set"
     or param == "setters"
     or param == "http_connect"
@@ -25,12 +26,12 @@ def get_set(target):
         serv_notice(target, "DNSBL Scans:                   %s" % (row[0]))
         serv_notice(target, "HTTP_CONNECT Scans:     %s" % (row[1]))
         serv_notice(target, "SOCKS Scans:                   %s" % (row[2]))
-        serv_notice(target, "Die access:                        %s" % (row[3]))
+        serv_notice(target, "Die/Restart access:            %s" % (row[3]))
         serv_notice(target, "Setters level:                     %s" % (row[4]))
-        serv_notice(target, "Say access:                     %s" % (row[5]))
-        serv_notice(target, "Emote access:                     %s" % (row[6]))
-        serv_notice(target, "View Exempts:                     %s" % (row[7]))
-        serv_notice(target, "Modify Exempts:                   %s" % (row[8]))
+        serv_notice(target, "Say access:                       %s" % (row[5]))
+        serv_notice(target, "Emote access:                    %s" % (row[6]))
+        serv_notice(target, "View Exempts:                    %s" % (row[7]))
+        serv_notice(target, "Modify Exempts:                  %s" % (row[8]))
     serv_notice(target, "End of configuration.")
 
 def update_settings(param, newlevel, target):
@@ -46,9 +47,9 @@ def update_settings(param, newlevel, target):
     elif param == "socks":
         param = "enable_socks"
         fancy = "SOCKS Scans"
-    elif param == "die":
+    elif param == "die" or param == "restart":
         param = "access_die"
-        fancy = "Die access"
+        fancy = "Die/Restart access"
     elif param == "set" or param == "setters":
         param = "access_set"
         fancy = "Setters"
@@ -110,9 +111,9 @@ def get_set_value(param, target):
     elif param == "socks":
         param = "enable_socks"
         fancy = "SOCKS Scans"
-    elif param == "die":
+    elif param == "die" or param == "restart":
         param = "access_die"
-        fancy = "Die access"
+        fancy = "Die/Restart access"
     elif param == "set" or param == "setters":
         param = "access_set"
         fancy = "Setters"
