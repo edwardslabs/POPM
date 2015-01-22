@@ -32,27 +32,10 @@ print("[WRITE]: %sAAA M %s +o %sAAA %d" % (config.SERVER_NUMERIC, config.DEBUG_C
 config.s.send("%s EB\n" % (config.SERVER_NUMERIC))
 print("[WRITE]: %s EB" % (config.SERVER_NUMERIC))
 readbuffer = ""
-try:
-    if uplinkid is False or uplinkid == "":
-        uplinkid = ""
-except NameError:
-    uplinkid = ""
-try:
-    if uplinkname is False or uplinkname == "":
-        uplinkname = ""
-except NameError:
-    uplinkname = ""
-try:
-    if userlist is False:
-        userlist = []
-except NameError:
-        userlist = []
-try:
-    if complete is False:
-        complete = 0
-except NameError:
-        complete = 0
-
+uplinkid = ""
+uplinkname = ""
+userlist = []
+complete = 0
 while 1:
     readbuffer=readbuffer + config.s.recv(32768)
     temp=string.split(readbuffer, "\n")
