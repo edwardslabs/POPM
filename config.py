@@ -27,18 +27,18 @@ try:
         SCAN_ON_BURST = conf["misc"]["scan_on_netburst"]
 
         # Config checker #
-        if not isinstance( DURATION, int ):
+        if not isinstance(DURATION, int):
             print "[CONFIG ERROR]: misc:gline_duration must be an integer (in seconds)"
             sys.exit()
-        if not isinstance( PORT, int ):
+        if not isinstance(PORT, int):
             print "[CONFIG ERROR]: server:port must be an integer"
             sys.exit()
-        if not isinstance( HOPS, int ):
+        if not isinstance(HOPS, int):
             print "[CONFIG ERROR]: server:hops must be an integer"
             sys.exit()
         if not len(SERVER_NUMERIC) == 2:
             print "[CONFIG ERROR]: server:server_numeric must be 2 letters/numers"
-        if not isinstance( SCAN_ON_BURST, int ):
+        if not isinstance(SCAN_ON_BURST, int):
             print "[CONFIG ERROR]: misc:scan_on_netburst must be either a 1 or 0 (true or false respectivly)"
             sys.exit()
         if not SCAN_ON_BURST == 0 or SCAN_ON_BURST == 1:

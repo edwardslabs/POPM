@@ -4,17 +4,17 @@ global config
 def is_settable(param):
     param = param.lower()
     if (param == "dnsbl"
-    or param == "http"
-    or param == "socks"
-    or param == "die"
-    or param == "restart"
-    or param == "set"
-    or param == "setters"
-    or param == "http_connect"
-    or param == "emote"
-    or param == "say"
-    or param == "exempt_mod"
-    or param == "exempt_view"):
+        or param == "http"
+        or param == "socks"
+        or param == "die"
+        or param == "restart"
+        or param == "set"
+        or param == "setters"
+        or param == "http_connect"
+        or param == "emote"
+        or param == "say"
+        or param == "exempt_mod"
+        or param == "exempt_view"):
         return True
     return False
 

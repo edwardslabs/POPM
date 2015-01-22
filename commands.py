@@ -45,13 +45,13 @@ def privmsg(userlist, line):
     elif(command == "set"):
         do_set(target, userlist, line)
 
-    elif (command == "say"):
+    elif(command == "say"):
         say(target, channel, userlist, line)
 
-    elif (command == "emote"):
+    elif(command == "emote"):
         emote(target, channel, userlist, line)
 
-    elif (command == "exempt"):
+    elif(command == "exempt"):
         exempt(target, userlist, line)
 
     elif(not channel):
