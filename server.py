@@ -74,13 +74,16 @@ while 1:
 
         # Create our user dictionary #
         if(line[1] == "N"):
-            if(":" in line[8]):
-                try:
-                    if line[12] != False:
-                        userlist.append("%s:%s" % (line[8].split(":")[0], line[11]))
-                except IndexError:
-                        userlist.append("%s:%s" % (line[8].split(":")[0], line[10]))
-                print "[INFO]: New userlist is " + str(userlist)
+            try:
+                if(":" in line[8]):
+                    try:
+                        if line[12] != False:
+                            userlist.append("%s:%s" % (line[8].split(":")[0], line[11]))
+                    except IndexError:
+                            userlist.append("%s:%s" % (line[8].split(":")[0], line[10]))
+                    print "[INFO]: New userlist is " + str(userlist)
+            except IndexError:
+                    pass
 
         # Add users as they authenticate #
         if(line[1] == "AC"):
@@ -114,21 +117,24 @@ while 1:
 
         # Get incomming connections #
         if(line[1] == "N"):
-            if (config.SCAN_ON_BURST == 1):
-                trueIP = getTrueIP(line[6])
-                trueIP = str(trueIP)
-                checkexpired()
-                if not isExempt(str(trueIP)):
-                    newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
-                    newip.start()
-            else:
-                if (complete == 1):
+            try:
+                if (config.SCAN_ON_BURST == 1):
                     trueIP = getTrueIP(line[6])
                     trueIP = str(trueIP)
                     checkexpired()
                     if not isExempt(str(trueIP)):
                         newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                         newip.start()
+                else:
+                    if (complete == 1):
+                        trueIP = getTrueIP(line[6])
+                        trueIP = str(trueIP)
+                        checkexpired()
+                        if not isExempt(str(trueIP)):
+                            newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
+                            newip.start()
+            except IndexError:
+                pass
 
         # Commands (efficienize me) #
         if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (config.SERVER_NUMERIC)):
