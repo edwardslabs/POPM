@@ -72,10 +72,11 @@ def access_level(numnick, userlist):
     authed = 0
     access = 0
     for i in userlist:
-        account = i.split(":")[0]
-        ircnum = i.split(":")[1]
-        if ircnum == numnick:
+        if numnick == i.split(":")[1]:
+            account = i.split(":")[0]
+            ircnum = i.split(":")[1]
             authed += 1
+            break
     if authed == 0:
         serv_notice(numnick, "You must first authenticate with NickServ.")
     else:
