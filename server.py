@@ -91,7 +91,7 @@ while 1:
             print "[INFO]: New userlist is " + str(userlist)
 
         # Acknowldge the netburst #
-        if(line[0] == uplinkid and line[1] == "EB"):
+        if(line[0] == uplinkid and line[1] == "EB" and complete == 0):
             config.s.send("%s EA\n" % (config.SERVER_NUMERIC))
             print("[WRITE]: %s EA" % (config.SERVER_NUMERIC))
             complete = 1
