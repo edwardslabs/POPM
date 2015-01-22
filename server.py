@@ -114,15 +114,19 @@ while 1:
 
         # Get incomming connections #
         if(line[1] == "N"):
-            trueIP = getTrueIP(line[6])
-            trueIP = str(trueIP)
-            checkexpired()
-            if not isExempt(str(trueIP)):
-                if (config.SCAN_ON_BURST == 1):
+            if (config.SCAN_ON_BURST == 1):
+                trueIP = getTrueIP(line[6])
+                trueIP = str(trueIP)
+                checkexpired()
+                if not isExempt(str(trueIP)):
                     newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                     newip.start()
-                else:
-                    if (complete == 1):
+            else:
+                if (complete == 1):
+                    trueIP = getTrueIP(line[6])
+                    trueIP = str(trueIP)
+                    checkexpired()
+                    if not isExempt(str(trueIP)):
                         newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
                         newip.start()
 
