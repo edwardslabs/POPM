@@ -2,7 +2,7 @@ import time
 import string
 import sys
 import config
-from access import show_access, get_level_req, update_access, get_acc, access_level, my_access
+from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say, addexempt, delexempt, get_modify_exempt, get_view_exempt, exemption_data
 from proxy import isIP
 global config
@@ -60,12 +60,8 @@ def gline_dnsbl(ip, timewo, timew, blacklist):
     print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
 
 def gline_socks(ip, timewo, timew, port, version):
-    if version == 1:
-        typev = 4
-    else:
-        typev = 5
-    config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%d/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, typev, port))
-    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%d/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, typev, port))
+    config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
+    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
 
 def get_threads(target, userlist, line):
     if access_level(target, userlist) > 750:
@@ -77,6 +73,7 @@ def get_threads(target, userlist, line):
         serv_notice(target, "You lack access to this command.")
 
 def get_access(target, userlist, line):
+    from access import my_access
     try:
         if line[5] != False:
             try:
