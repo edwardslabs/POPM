@@ -4,7 +4,7 @@ import sys
 import config
 from access import show_access, get_level_req, update_access, get_acc, access_level
 from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say, addexempt, delexempt, get_modify_exempt, get_view_exempt, exemption_data
-from proxy import isIP
+from proxy import isIP, isIPv6
 global config
 global sys
 
@@ -109,7 +109,7 @@ def exempt(target, userlist, line):
         if line[4].lower() == "add":
             if access_level(target, userlist) >= get_modify_exempt():
                 try:
-                    if isIP(line[5]):
+                    if isIP(line[5]) or isIPv6(line[5]):
                         theip = line[5]
                         try:
                             if line[6][-1] == "s":
@@ -191,7 +191,7 @@ def exempt(target, userlist, line):
         elif line[4].lower() == "del":
             if access_level(target, userlist) >= get_modify_exempt():
                 try:
-                    if isIP(line[5]):
+                    if isIP(line[5]) or isIPv6(line[5]):
                         theip = line[5]
                         account = get_acc(target, userlist)
                         delexempt(target, account, theip)
