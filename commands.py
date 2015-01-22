@@ -21,7 +21,10 @@ def privmsg(userlist, line):
         return
 
     if command[:1] == config.PREFIX and channel:
-        command = command[1:]
+        if access_level(target, userlist) is not False:
+            command = command[1:]
+        else:
+            return
 
     # Commands list #
     if(command == "threads"):
