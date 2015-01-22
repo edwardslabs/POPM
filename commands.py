@@ -203,6 +203,8 @@ def exempt(target, userlist, line):
                 exemption_data(target)
             else:
                 serv_notice(target, "You lack access to this command.")
+        else:
+            serv_notice(target, "Invalid paramater for EXEMPT")
     except IndexError:
         serv_notice(target, "Not enough paramaters for EXEMPT")
 
