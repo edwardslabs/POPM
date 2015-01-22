@@ -32,6 +32,7 @@ def isIP(address):
     return ip
 
 def getTrueIP(ip):
+    ip = str(ip)
     try:
         if isIP(ip) is False:
             answers = dns.resolver.query(ip,'A')

@@ -75,7 +75,11 @@ while 1:
         # Create our user dictionary #
         if(line[1] == "N"):
             if(":" in line[8]):
-                userlist.append("%s:%s" % (line[8].split(":")[0], line[11]))
+                try:
+                    if line[12] != False:
+                        userlist.append("%s:%s" % (line[8].split(":")[0], line[11]))
+                except IndexError:
+                        userlist.append("%s:%s" % (line[8].split(":")[0], line[10]))
                 print "[INFO]: New userlist is " + str(userlist)
 
         # Add users as they authenticate #
