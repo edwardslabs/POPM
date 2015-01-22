@@ -12,6 +12,16 @@ global config
 global Process
 global pack
 
+def isIPv6(address):
+    import re
+    pattern = r'^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$'
+    if re.match(pattern, address):
+        print "%s is true!!" % address
+        return True
+    else:
+        print "%s is false D:" % address
+        return False
+
 def isIP(address):
     #Takes a string and returns a status if it matches
     #a ipv4 address
@@ -35,36 +45,39 @@ def isIP(address):
 
 def getTrueIP(ip):
     ip = str(ip)
-    try:
-        if isIP(ip) is False:
+    if isIP(ip) is False and isIPv6(ip) is False:
+        try:
             answers = dns.resolver.query(ip,'A')
+            answers.timeout = 2
+            answers.lifetime = 2
             for server in answers:
                 rawip = server
             return rawip
-        else:
+        except dns.resolver.NXDOMAIN:
             return ip
-    except dns.resolver.NXDOMAIN:
+        except dns.exception.Timeout:
+            try:
+                answers = dns.resolver.query(ip,'AAAA')
+                answers.timeout = 2
+                answers.lifetime = 2
+                for server in answers:
+                    rawip = server
+                return rawip
+            except dns.resolver.NXDOMAIN:
+                return ip
+            except dns.exception.Timeout:
+                return ip
+    else:
         return ip
 
 def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE):
     bll = ["tor.dan.me.uk", "rbl.efnetrbl.org", "dnsbl.proxybl.org", "dnsbl.dronebl.org", "tor.efnet.org"]
-    try:
-        if isIP(ip) is False:
-            answers = dns.resolver.query(ip,'A')
-            for server in answers:
-                rawip = server
-        else:
-            rawip = ip
-    except dns.resolver.NXDOMAIN:
-        rawip = ip
 
-    rawip = str(rawip)
-
-    if DNSTRUE == 0:
-        http_connect(rawip, HTTPTRUE, SOCKSTRUE)
+    if DNSTRUE == 0 or isIPv6(ip):
+        http_connect(ip, HTTPTRUE, SOCKSTRUE)
     else:
-        print "[SCANNING]: DNSBL scan on " + str(rawip)
-        newip = rawip.split(".")
+        print "[SCANNING]: DNSBL scan on " + str(ip)
+        newip = ip.split(".")
         newip = newip[::-1]
         newip = '.'.join(newip)
         contrue = 0
@@ -81,7 +94,7 @@ def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE):
                 continue
 
         if contrue == 5:
-            http_connect(rawip, HTTPTRUE, SOCKSTRUE)
+            http_connect(ip, HTTPTRUE, SOCKSTRUE)
 
 def http_connect_threads(ip, port):
     from commands import gline_http
