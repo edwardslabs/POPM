@@ -26,6 +26,9 @@ try:
         DURATION = conf["misc"]["gline_duration"]
         SCAN_ON_BURST = conf["misc"]["scan_on_netburst"]
         PROTO = conf["server"]["protocol"]
+        DNSBL_BAN_MSG = conf["proxy"]["dnsbl_ban_message"]
+        HTTP_BAN_MSG = conf["proxy"]["http_ban_message"]
+        SOCKS_BAN_MSG = conf["proxy"]["socks_ban_message"]
 
         # Config checker #
         if not isinstance(DURATION, int):

@@ -6,8 +6,13 @@ server:
   hops: 1
   server_description: Python Pseudo IRC Services
   server_numeric: AS
-  server_password: 
-  protocol: P10
+  server_password:
+  protocol: P10Server
+
+proxy:
+  dnsbl_ban_message: "AUTO Your IP is listed as being an infected drone, or otherwise not fit to join {network}. [Detected {list}]"
+  http_ban_message: "AUTO Using or hosting open proxies is not permitted on {network}. [Detected http_connect/{port}]"
+  socks_ban_message: "AUTO Using or hosting open proxies is not permitted on {network}. [Detected socks{version}/{port}]"
 
 bot:
   nick: ProxyServ

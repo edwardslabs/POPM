@@ -46,16 +46,19 @@ class P10Server(object):
         config.s.send("%sAAA P %s :%s\n" % (config.SERVER_NUMERIC, target, message))
 
     def gline_http(self, ip, timewo, timew, port):
-        config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
-        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
+        newmessage = config.HTTP_BAN_MSG.replace("{network}", str(config.NETWORK_NAME)).replace("{port}", str(port))
+        config.s.send("%s GL * +*@%s %d %d %d :%s\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
+        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s %d %d %d :%s" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
 
     def gline_dnsbl(self, ip, timewo, timew, blacklist):
-        config.s.send("%s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
-        print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
+        newmessage = config.DNSBL_BAN_MSG.replace("{network}", str(config.NETWORK_NAME)).replace("{list}", str(blacklist))
+        config.s.send("%s GL * +*@%s %d %d %d :%s\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
+        print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :%s" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
 
     def gline_socks(self, ip, timewo, timew, port, version):
-        config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
-        print("[WRITE][SOCKS%s_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]" % (version, config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
+        newmessage = config.SOCKS_BAN_MSG.replace("{network}", str(config.NETWORK_NAME)).replace("{port}", str(port)).replace("{version}", str(version))
+        config.s.send("%s GL * +*@%s %d %d %d :%s\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
+        print("[WRITE][SOCKS%s_FOUND]: %s GL * +*@%s %d %d %d :%s" % (version, config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
 
     def startbuffer(self):
         signal.signal(signal.SIGINT, self.signal_handler)
