@@ -1,6 +1,5 @@
 import sys
 import socket
-import socks
 import string
 import signal
 import time

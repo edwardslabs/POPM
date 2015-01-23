@@ -1,6 +1,5 @@
 import sys
 import socket
-import socks
 import ssl
 import string
 import time
