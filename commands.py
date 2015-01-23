@@ -129,7 +129,7 @@ def exempt(target, userlist, line):
                             elif line[6] == "0":
                                 typetime = 8
                             else:
-                                #print "recieved %s" % (line[6])
+                                #print "received %s" % (line[6])
                                 serv_notice(target, "Invalid time format")
                                 return
                             try:
@@ -408,7 +408,7 @@ def get_help(target, userlist, line):
                 if line[4].lower() == "threads":
                     serv_notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                     serv_notice(target, "THREADS displays the current number of worker threads by %s." % (config.BOT_NAME))
-                    serv_notice(target, "These threads are spawned when an incoming connection is recieved")
+                    serv_notice(target, "These threads are spawned when an incoming connection is received")
                     serv_notice(target, "to check for proxys on the remote host.")
                     serv_notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "access":
