@@ -7,6 +7,7 @@ server:
   server_description: Python Pseudo IRC Services
   server_numeric: AS
   server_password: 
+  protocol: P10
 
 bot:
   nick: ProxyServ

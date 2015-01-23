@@ -25,6 +25,7 @@ try:
         DB_PASS = conf["database"]["pass"]
         DURATION = conf["misc"]["gline_duration"]
         SCAN_ON_BURST = conf["misc"]["scan_on_netburst"]
+        PROTO = conf["server"]["protocol"]
 
         # Config checker #
         if not isinstance(DURATION, int):
@@ -38,6 +39,7 @@ try:
             sys.exit()
         if not len(SERVER_NUMERIC) == 2:
             print "[CONFIG ERROR]: server:server_numeric must be 2 letters/numers"
+            sys.exit()
         if not isinstance(SCAN_ON_BURST, int):
             print "[CONFIG ERROR]: misc:scan_on_netburst must be either a 1 or 0 (true or false respectivly)"
             sys.exit()

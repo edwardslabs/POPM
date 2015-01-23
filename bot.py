@@ -9,31 +9,38 @@ from settings import is_settable, get_set, update_settings, get_set_value, get_d
 from commands import privmsg
 from multiprocessing import Process, Queue
 
-class Server:
-
-    def signal_handler(signal, frame):
+class P10(object):
+    def signal_handler(self, signal, frame):
         config.s.send("%sAAA Q :Shutdown received from terminal\n" % (config.SERVER_NUMERIC))
         print("[WRITE]: %sAAA Q :Shutdown received from terminal" % (config.SERVER_NUMERIC))
         config.s.send("%s SQ %s 0 :Shutdown received from terminal\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME))
         print("[WRITE]: %s SQ %s 0 :Shutdown received from terminal" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME))
         sys.exit()
 
-    if __name__ == "__main__":
-        signal.signal(signal.SIGINT, signal_handler)
+    def p10connect(self, time):
         config.s.connect((config.HOST, config.PORT))
-        boot_time = int(time.time())
         config.s.send("PASS %s\n" % (config.SERVER_PASS))
         print("[WRITE]: PASS %s" % (config.SERVER_PASS))
-        config.s.send("SERVER %s %s %d %d J10 %s]]] :%s\n" % (config.SERVER_HOST_NAME, config.HOPS, boot_time, boot_time, config.SERVER_NUMERIC, config.SERVER_DESCRIPTION))
-        print("[WRITE]: SERVER %s %s %d %d J10 %s]]] :%s" % (config.SERVER_HOST_NAME, config.HOPS, boot_time, boot_time, config.SERVER_NUMERIC, config.SERVER_DESCRIPTION))
-        config.s.send("%s N %s 1 %d %s %s %s AAAAAA %sAAA :%s\n" % (config.SERVER_NUMERIC, config.BOT_NAME, boot_time, config.BOT_NAME, config.BOT_HOST, config.BOT_MODE, config.SERVER_NUMERIC, config.BOT_DESC))
-        print("[WRITE]: %s N %s 1 %d %s %s %s AAAAAA %sAAA :%s" % (config.SERVER_NUMERIC, config.BOT_NAME, boot_time, config.SERVER_NUMERIC, config.BOT_HOST, config.BOT_MODE, config.BOT_NAME, config.BOT_DESC))
-        config.s.send("%s B %s %d %sAAA:o\n" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, boot_time, config.SERVER_NUMERIC))
-        print("[WRITE]: %s B %s %d %sAAA:o" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, boot_time, config.SERVER_NUMERIC))
-        config.s.send("%sAAA M %s +o %sAAA %d\n" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, config.SERVER_NUMERIC, boot_time)) # Unless our server is U-Lined, this won't work #
-        print("[WRITE]: %sAAA M %s +o %sAAA %d" % (config.SERVER_NUMERIC, config.DEBUG_CHANNEL, config.SERVER_NUMERIC, boot_time))
+        config.s.send("SERVER %s %s %d %d J10 %s]]] :%s\n" % (config.SERVER_HOST_NAME, config.HOPS, time, time, config.SERVER_NUMERIC, config.SERVER_DESCRIPTION))
+        print("[WRITE]: SERVER %s %s %d %d J10 %s]]] :%s" % (config.SERVER_HOST_NAME, config.HOPS, time, time, config.SERVER_NUMERIC, config.SERVER_DESCRIPTION))
+
+    def p10loadclient(self, nclient, time, botname, bothost, botmode, servernumeric, botdescription):
+        newclient = chr(ord('A')+nclient)
+        config.s.send("%s N %s 1 %d %s %s %s AAAAA%s %sAA%s :%s\n" % (config.SERVER_NUMERIC, botname, time, botname, bothost, botmode, newclient, config.SERVER_NUMERIC, newclient, botdescription))
+        print("[WRITE]: %s N %s 1 %d %s %s %s AAAAA%s %sAA%s :%s" % (config.SERVER_NUMERIC, botname, time, botname, bothost, botmode, newclient, config.SERVER_NUMERIC, newclient, botdescription))
+
+    def p10joinchannel(self, time, clientid, channel):
+        config.s.send("%s B %s %d %sAA%s:o\n" % (config.SERVER_NUMERIC, channel, time, config.SERVER_NUMERIC, clientid))
+        print("[WRITE]: %s B %s %d %sAA%s:o" % (config.SERVER_NUMERIC, channel, time, config.SERVER_NUMERIC, clientid))
+        config.s.send("%sAAA M %s +o %sAA%s %d\n" % (config.SERVER_NUMERIC, channel, config.SERVER_NUMERIC, clientid, time)) # Unless our server is U-Lined, this won't work #
+        print("[WRITE]: %sAAA M %s +o %sAA%s %d" % (config.SERVER_NUMERIC, channel, config.SERVER_NUMERIC, clientid, time))
+
+    def p10eob(self):
         config.s.send("%s EB\n" % (config.SERVER_NUMERIC))
         print("[WRITE]: %s EB" % (config.SERVER_NUMERIC))
+
+    def p10startbuffer(self):
+        signal.signal(signal.SIGINT, self.signal_handler)
         readbuffer = ""
         uplinkid = ""
         uplinkname = ""
@@ -43,12 +50,10 @@ class Server:
             readbuffer=readbuffer + config.s.recv(32768)
             temp=string.split(readbuffer, "\n")
             readbuffer=temp.pop()
-
             for line in temp:
                 print "[READ]: " + line
                 line=string.rstrip(line)
                 line=string.split(line)
-
                 # Get initial data from uplink #
                 if(line[0] == "SERVER"):
                     if uplinkid == line[6][:2]:
@@ -123,3 +128,13 @@ class Server:
                 # Commands (efficienize me) #
                 if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (config.SERVER_NUMERIC)):
                     privmsg(userlist, line)
+
+if __name__ == "__main__":
+    if config.PROTO == "P10":
+        proto = P10()
+        boot_time = int(time.time())
+        proto.p10connect(boot_time)
+        proto.p10loadclient(0, boot_time, config.BOT_NAME, config.BOT_HOST, config.BOT_MODE, config.SERVER_NUMERIC, config.BOT_DESC)
+        proto.p10joinchannel(boot_time, "A", config.DEBUG_CHANNEL)
+        proto.p10eob()
+        proto.p10startbuffer()
