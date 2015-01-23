@@ -98,7 +98,6 @@ def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE):
 
 def http_connect_threads(ip, port):
     from commands import gline_http
-    global tested, contrue
     tcp=socket.socket()
     tcp.settimeout(2)
     portbuf = ""
@@ -119,7 +118,6 @@ def http_connect_threads(ip, port):
 
 def https_connect_threads(ip, port):
     from commands import gline_http
-    global tested, contrue
     tcps=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     ssl_sock = ssl.wrap_socket(tcps)
     ssl_sock.settimeout(2)
@@ -141,7 +139,6 @@ def https_connect_threads(ip, port):
 
 def http_connect(ip, HTTPTRUE, SOCKSTRUE):
     from commands import gline_http
-    global tested
     if HTTPTRUE == 0:
         sockscheck(ip, SOCKSTRUE)
     else:
