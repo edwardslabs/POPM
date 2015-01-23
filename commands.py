@@ -57,18 +57,6 @@ def privmsg(userlist, line):
     elif(not channel):
         command_unknown(target, userlist, line)
 
-def gline_http(ip, timewo, timew, port):
-    config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
-    print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
-
-def gline_dnsbl(ip, timewo, timew, blacklist):
-    config.s.send("%s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
-    print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
-
-def gline_socks(ip, timewo, timew, port, version):
-    config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
-    print("[WRITE][SOCKS%s_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]" % (version, config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
-
 def get_threads(target, userlist, line):
     if access_level(target, userlist) > 750:
         try:

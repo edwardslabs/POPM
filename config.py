@@ -46,6 +46,9 @@ try:
         if not SCAN_ON_BURST == 0 or SCAN_ON_BURST == 1:
             print "[CONFIG ERROR]: misc:scan_on_netburst must be either a 1 or 0 (true or false respectivly)"
             sys.exit()
+        if not PROTO == "P10":
+            print "[CONFIG ERROR]: server:protocol must be P10 (more support coming soon)"
+            sys.exit()
 
 except IOError:
     print "[CONFIG ERROR]: config.yaml is missing!"

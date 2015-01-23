@@ -39,6 +39,18 @@ class P10(object):
         config.s.send("%s EB\n" % (config.SERVER_NUMERIC))
         print("[WRITE]: %s EB" % (config.SERVER_NUMERIC))
 
+    def gline_http(self, ip, timewo, timew, port):
+        config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
+        print("[WRITE][HTTP_CONNECT]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected http_connect/%s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, port))
+
+    def gline_dnsbl(self, ip, timewo, timew, blacklist):
+        config.s.send("%s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
+        print("[WRITE][DNSBL_FOUND]: %s GL * +*@%s %d %d %d :AUTO Your IP is listed as being an infected drone, or otherwise not fit to join %s. [Detected %s]" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, blacklist))
+
+    def gline_socks(self, ip, timewo, timew, port, version):
+        config.s.send("%s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
+        print("[WRITE][SOCKS%s_FOUND]: %s GL * +*@%s %d %d %d :AUTO Using or hosting open proxies is not permitted on %s. [Detected socks%s/%s]" % (version, config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, config.NETWORK_NAME, version, port))
+
     def p10startbuffer(self):
         signal.signal(signal.SIGINT, self.signal_handler)
         readbuffer = ""
@@ -113,14 +125,14 @@ class P10(object):
                             trueIP = str(getTrueIP(line[6]))
                             checkexpired()
                             if not isExempt(trueIP):
-                                newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
+                                newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value(), P10()))
                                 newip.start()
                         else:
                             if complete == 1:
                                 trueIP = str(getTrueIP(line[6]))
                                 checkexpired()
                                 if not isExempt(trueIP):
-                                    newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
+                                    newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value(), P10()))
                                     newip.start()
                     except IndexError:
                         pass
