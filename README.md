@@ -7,7 +7,7 @@ POPM was created to be a one use tool for helping to block malicious users conne
 
 Design Stage
 ---
-POPM is still an early project, so many things are still yet to be thoroughly tested. A list of features that are planned will come either soon, or are already attached to this repo under "todo.txt"
+POPM is still an early project, so many things are still yet to be thoroughly tested. A list of features that are planned will come either soon, or are already attached to this repo under "TODO"
 
 Set up
 ---
@@ -15,7 +15,7 @@ Python 2.7 or newer is required for POPM to function.
 The basic config.yaml file can be broken down as follows:
 
 ####Server
-* name: This should be the name of your IRC network. (e.x. GameSurge)
+* name: This should be the name of your IRC network (e.g. GameSurge)
 * host: The uplink IP address or hostname
 * port: The port to connect to
 * self-server-host-name: What POPM will identify itself as to the uplink
