@@ -43,11 +43,14 @@ try:
         if not isinstance(SCAN_ON_BURST, int):
             print "[CONFIG ERROR]: misc:scan_on_netburst must be either a 1 or 0 (true or false respectivly)"
             sys.exit()
-        if not SCAN_ON_BURST == 0 or SCAN_ON_BURST == 1:
+        if SCAN_ON_BURST not in {0, 1}:
             print "[CONFIG ERROR]: misc:scan_on_netburst must be either a 1 or 0 (true or false respectivly)"
             sys.exit()
-        if not PROTO == "P10":
-            print "[CONFIG ERROR]: server:protocol must be P10 (more support coming soon)"
+        if PROTO.lower() == "p10server":
+            from p10server import P10Server
+            confproto = P10Server()
+        else:
+            print "[CONFIG ERROR]: server:protocol must be P10Server (more support coming soon(tm))"
             sys.exit()
 
 except IOError:
