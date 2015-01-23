@@ -55,13 +55,13 @@ try:
             print "[CONFIG ERROR]: misc:scan_on_netburst must be either a 1 or 0 (true or false respectivly)"
             sys.exit()
 
-        if DNSBL_BAN_MSG == "" or not DNSBL_BAN_MSG:
+        if not DNSBL_BAN_MSG:
             DNSBL_BAN_MSG = "No reason given."
 
-        if HTTP_BAN_MSG == "" or not HTTP_BAN_MSG:
+        if not HTTP_BAN_MSG:
             HTTP_BAN_MSG = "No reason given."
 
-        if SOCKS_BAN_MSG == "" or not SOCKS_BAN_MSG:
+        if not SOCKS_BAN_MSG:
             SOCKS_BAN_MSG = "No reason given.":
 
         if PROTO.lower() == "p10server":
