@@ -62,7 +62,7 @@ try:
             HTTP_BAN_MSG = "No reason given."
 
         if not SOCKS_BAN_MSG:
-            SOCKS_BAN_MSG = "No reason given.":
+            SOCKS_BAN_MSG = "No reason given."
 
         if PROTO.lower() == "p10server":
             from p10server import P10Server

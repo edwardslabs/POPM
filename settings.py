@@ -204,7 +204,8 @@ def exemption_data(target):
     if config.cur.rowcount > 0:
         config.confproto.notice(target, "Exempted IP address:")
         for row in config.cur.fetchall():
-            if row[7] == '0':
+            print row[7]
+            if not row[7]:
                 if row[4] is None:
                     config.confproto.notice(target, "ID: %d | IP %s - Added %s by %s set to expire %s for reason %s." % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[5])), row[8]))
                 else:

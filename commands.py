@@ -100,74 +100,56 @@ def exempt(target, userlist, line):
                     if isIP(line[5]) or isIPv6(line[5]):
                         theip = line[5]
                         try:
+                            try:
+                                newdigit = int(line[6][:-1])
+                            except ValueError:
+                                try:
+                                    if int(line[6]) == 0:
+                                        newdigit = line[6]
+                                    else:
+                                        config.confproto.notice(target, "Invalid time format")
+                                        return
+                                except ValueError:
+                                    config.confproto.notice(target, "Invalid time format")
+                                    return
+                            perma = False
                             if line[6][-1] == "s":
-                                typetime = 1
+                                newtime = newdigit
                             elif line[6][-1] == "m":
-                                typetime = 2
+                                newtime = newdigit * 60
                             elif line[6][-1] == "h":
-                                typetime = 3
+                                newtime = newdigit * 3600
                             elif line[6][-1] == "d":
-                                typetime = 4
+                                newtime = newdigit * 86400
                             elif line[6][-1] == "w":
-                                typetime = 5
+                                newtime = newdigit * 604800
                             elif line[6][-1] == "M":
-                                typetime = 6
+                                newtime = newdigit * 2628000
                             elif line[6][-1] == "y":
-                                typetime = 7
+                                newtime = newdigit * 31536000
                             elif line[6] == "0":
-                                typetime = 8
+                                newtime = 0
+                                perma = True
                             else:
-                                #print "received %s" % (line[6])
                                 config.confproto.notice(target, "Invalid time format")
                                 return
+                            account = get_acc(target, userlist)
+                            epoch = int(time.time())
+                            expire = epoch + newtime
                             try:
-                                if typetime != 8:
-                                    newdigit = int(line[6][:-1])
-                                else:
-                                    newdigit = 0
-                                if isinstance(newdigit, int):
-                                    newtime = 0
-                                    perma = False
-                                    if typetime == 1:
-                                        newtime = newdigit
-                                    elif typetime == 2:
-                                        newtime = newdigit * 60
-                                    elif typetime == 3:
-                                        newtime = newdigit * 3600
-                                    elif typetime == 4:
-                                        newtime = newdigit * 86400
-                                    elif typetime == 5:
-                                        newtime = newdigit * 604800
-                                    elif typetime == 6:
-                                        newtime = newdigit * 2628000
-                                    elif typetime == 7:
-                                        newtime = newdigit * 31536000
-                                    elif typetime == 8:
-                                        newtime = 0
-                                        perma = True
-                                    account = get_acc(target, userlist)
-                                    epoch = int(time.time())
-                                    expire = epoch + newtime
-                                    #print("%s = %s + %s" % (expire, epoch, newtime))
-                                    try:
-                                        if line[7]:
-                                            arlen = len(line)
-                                            i = 7
-                                            newstring = ""
-                                            while i < arlen:
-                                                if newstring == "":
-                                                    newstring = line[i]
-                                                else:
-                                                    newstring = newstring + " " + line[i]
-                                                i += 1
-                                    except IndexError:
-                                        newstring = "No reason specified"
-                                    addexempt(target, account, str(theip), epoch, expire, perma, newstring)
-                                    #print "IP: " + str(theip) + " .::. account: " + str(account) + " .::. epoch " + str(epoch) + " .::. expire: " + str(expire) + " .::. perma: " + str(perma) + " .::. reason: " + str(newstring) 
-                                else:
-                                    config.confproto.notice(target, "Invalid time format")
-                            except ValueError:
-                                config.confproto.notice(target, "Invalid time format")
+                                if line[7]:
+                                    arlen = len(line)
+                                    i = 7
+                                    newstring = ""
+                                    while i < arlen:
+                                        if newstring == "":
+                                            newstring = line[i]
+                                        else:
+                                            newstring = newstring + " " + line[i]
+                                        i += 1
+                            except IndexError:
+                                newstring = "No reason specified"
+                            addexempt(target, account, str(theip), epoch, expire, perma, newstring)
                         except IndexError:
                             config.confproto.notice(target, "You must provide time for the exemption to be active for")
                     else:
@@ -176,6 +158,7 @@ def exempt(target, userlist, line):
                     config.confproto.notice(target, "You must provide an IP address to exempt")
             else:
                 config.confproto.notice(target, "You lack access to this command.")
+
         elif line[4].lower() == "del":
             if access_level(target, userlist) >= get_modify_exempt():
                 try:
@@ -189,6 +172,7 @@ def exempt(target, userlist, line):
                     config.confproto.notice(target, "You must provide a valid IP address")
             else:
                 config.confproto.notice(target, "You lack access to this command.")
+
         elif line[4].lower() == "list":
             if access_level(target, userlist) >= get_view_exempt():
                 exemption_data(target)
@@ -196,6 +180,7 @@ def exempt(target, userlist, line):
                 config.confproto.notice(target, "You lack access to this command.")
         else:
             config.confproto.notice(target, "Invalid paramater for EXEMPT")
+
     except IndexError:
         config.confproto.notice(target, "Not enough paramaters for EXEMPT")
 
