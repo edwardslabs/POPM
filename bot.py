@@ -40,7 +40,6 @@ class StartServer(object):
             sys.exit("POPM is already running under PID %s" % (pid))
 
     def run(self, argv):
-        import config
         config.dbverify()
         if os.path.isfile(self.pidfile) and '-h' not in str(sys.argv):
             self.is_process_running()
