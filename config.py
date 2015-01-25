@@ -77,8 +77,6 @@ try:
             print "[CONFIG ERROR]: server:protocol must be P10Server (more support coming soon(tm))"
             sys.exit()
 
-        main = StartServer()
-
 except IOError:
     print "[CONFIG ERROR]: config.yaml is missing!"
     sys.exit()
@@ -86,10 +84,38 @@ except KeyError:
     print "[CONFIG ERROR]: Your config file is incomplete; Please recopy config.yaml.example and rebase your settings from there."
     sys.exit()
 
-pgconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
-cur = pgconn.cursor()
-# Have cursor dedicated for settings look ups #
-pgconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
-curauto = pgconnauto.cursor()
-
 s=socket.socket()
+main = StartServer()
+
+def dbverify():
+    try:
+        pgconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+        cur = pgconn.cursor()
+        cur.execute("SELECT * FROM settings WHERE access_die >= 0 AND access_die <= 1000 AND access_set >= 0 AND access_set <= 1000 AND access_say >= 0 AND access_say <= 1000 AND access_emote >= 0 AND access_emote <= 1000 AND access_joinpart >= 0 AND access_joinpart <= 1000 AND modify_exempts >= 0 AND modify_exempts <= 1000")
+        if cur.rowcount != 1:
+            sys.exit("Your PostgreSQL database does not contain a valid `settings` table. The access roles must be between 0 - 1000. Please check your database, or reimport the template .sql file.")
+        cur.execute("SELECT * FROM settings WHERE enable_dnsbl = '1' OR enable_dnsbl = '0' AND enable_http = '1' OR enable_http = '0' AND enable_socks = '1' OR enable_socks = '0'")
+        if cur.rowcount != 1:
+            sys.exit("Your PostgreSQL database does not contain a valid `settings` table. Proxy monitors must either be set to on or off (Boolbean 0/1). Please check your database, or reimport the template .sql file.")
+        cur.execute("SELECT * FROM users")
+        if cur.rowcount < 1:
+            print "WARNING: POPM does not have a list of admins. It is reccomended to add yourself to the `users` table in PostgreSQL to gain admin priveleges. There will be a startup admin cookie generated in the future to prevent this."
+        pgconn.close()
+
+        pgconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+        curauto = pgconnauto.cursor()
+        pgconnauto.close()
+    except psycopg2.OperationalError, v:
+        sys.exit("A database error has occured: %s" % (v))
+
+def dbconnect():
+    global cur
+    global pgconn
+    global pgconnauto
+    global curauto
+
+    pgconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+    cur = pgconn.cursor()
+    # Have cursor dedicated for settings look ups #
+    pgconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+    curauto = pgconnauto.cursor()
