@@ -3,8 +3,29 @@ import time
 import string
 import sys
 import config
-from access import show_access, get_level_req, update_access, get_acc, access_level
-from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say, addexempt, delexempt, get_modify_exempt, get_view_exempt, exemption_data, user_rows, exemption_rows
+from access import (
+    show_access,
+    get_level_req,
+    update_access,
+    get_acc,
+    access_level,
+    is_authed
+)
+from settings import (
+    is_settable,
+    get_set,
+    update_settings,
+    get_set_value,
+    get_die, get_say,
+    addexempt, delexempt,
+    get_modify_exempt,
+    get_view_exempt,
+    exemption_data,
+    user_rows,
+    exemption_rows,
+    claim_root,
+    give_root
+)
 from proxy import isIP, isIPv6
 global config
 global sys
@@ -57,6 +78,9 @@ def privmsg_parser(userlist, line):
 
     elif(command == "uptime"):
         uptime(target, userlist)
+
+    elif(command == "authme"):
+        authme(target, userlist, line)
 
     elif(not channel):
         command_unknown(target, userlist, line)
@@ -258,6 +282,26 @@ def restart(target, userlist, line):
                 config.confproto.notice(target, "You lack access to this command")
     except IndexError:
         config.confproto.notice(target, "Insufficient paramaters for RESTART")
+
+def authme(target, userlist, line):
+    if is_authed(target, userlist):
+        if claim_root():
+            ourcookie = claim_root()
+            try:
+                theircookie = int(line[4])
+            except ValueError:
+                config.confproto.notice(target, "Incorrect authcookie")
+            except IndexError:
+                config.confproto.notice(target, "You must supply a cookie to identify with")
+            if ourcookie == theircookie:
+                account = get_acc(target, userlist)
+                give_root(account, target)
+            else:
+                config.confproto.notice(target, "Incorrect authcookie")
+        else:
+            config.confproto.notice(target, "The authcookie has already been claimed")
+    else:
+        config.confproto.notice(target, "You must be authenticated with NickServ")
 
 def uptime(target, userlist):
     if access_level(target, userlist) >= get_level_req("access_set"):

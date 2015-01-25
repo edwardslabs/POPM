@@ -266,13 +266,6 @@ INSERT INTO settings VALUES (true, true, true, 1000, 1000, 1000, 1000, 1000, 100
 
 
 --
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: POPM
---
-
-INSERT INTO users VALUES (1, 'newuser', 1421709178, 1000, 'newuser');
-
-
---
 -- Name: users_ID_seq; Type: SEQUENCE SET; Schema: public; Owner: POPM
 --
 

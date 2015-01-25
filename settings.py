@@ -222,3 +222,18 @@ def exemption_rows():
     config.cur.execute("SELECT COUNT(*) FROM exemptions")
     value = config.cur.fetchone()
     return value[0]
+
+def claim_root():
+    config.cur.execute("SELECT admin FROM users")
+    if config.cur.rowcount == 1:
+        uid = config.cur.fetchone()
+        try:
+            iuid = int(uid[0])
+            return iuid
+        except ValueError:
+            return False
+
+def give_root(account, target):
+    config.cur.execute("UPDATE users SET admin = %s", [account])
+    config.confproto.notice(target, "Thanks! Your account (%s) now has root privieleges to POPM." % (account))
+    config.confproto.notice(target, "For assistance, you may /msg %s HELP or consult the README file." % (config.BOT_NAME))

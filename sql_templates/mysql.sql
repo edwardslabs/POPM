@@ -83,9 +83,6 @@ CREATE TABLE IF NOT EXISTS `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`ID`, `admin`, `added`, `access`, `bywho`) VALUES
-(1, 'your_username_here', 0, 1000, 'any_username');
-
 --
 -- Indexes for dumped tables
 --

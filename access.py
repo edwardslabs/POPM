@@ -35,7 +35,7 @@ def update_access(user, level, whodidit, userlist):
     import time
     if isinstance(level, int):
         bywho = get_acc(whodidit, userlist)
-        config.cur.execute("SELECT admin FROM users WHERE admin = %s", [user])
+        config.cur.execute("SELECT admin FROM users WHERE admin = %s", (user))
         epoch = int(time.time())
         if config.cur.rowcount < 1:
             if level < 0:
@@ -46,7 +46,7 @@ def update_access(user, level, whodidit, userlist):
                 config.confproto.notice(whodidit, "Account %s has been added with access %d." % (user, level))
         else:
             if level < 0:
-                config.cur.execute("DELETE FROM users * WHERE admin = %s", [user])
+                config.cur.execute("DELETE FROM users WHERE admin = %s", (user))
                 config.dbconn.commit()
                 config.confproto.notice(whodidit, "Access for account %s has been deleted." % (user))
             else:
@@ -56,9 +56,19 @@ def update_access(user, level, whodidit, userlist):
     else:
         config.confproto.notice(whodidit, "Access levels must be an integer.")
 
-def get_acc(numnick, userlist):
+def is_authed(numnick, userlist):
     authed = 0
-    access = 0
+    for i in userlist:
+        account = i.split(":")[0]
+        ircnum = i.split(":")[1]
+        if ircnum == numnick:
+            authed += 1
+    if authed == 0:
+        return False
+    else:
+        return True
+
+def get_acc(numnick, userlist):
     for i in userlist:
         account = i.split(":")[0]
         ircnum = i.split(":")[1]
