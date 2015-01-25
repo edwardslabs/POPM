@@ -15,10 +15,8 @@ def isIPv6(address):
     import re
     pattern = r'^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$'
     if re.match(pattern, address):
-        #print "%s is true!!" % address
         return True
     else:
-        #print "%s is false D:" % address
         return False
 
 def isIP(address):
@@ -74,7 +72,7 @@ def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE):
     if DNSTRUE == 0 or isIPv6(ip):
         http_connect(ip, HTTPTRUE, SOCKSTRUE)
     else:
-        print "[SCANNING]: DNSBL scan on " + str(ip)
+        config.confproto.logger(2, "[SCANNING]: DNSBL scan on " + str(ip))
         newip = ip.split(".")
         newip = newip[::-1]
         newip = '.'.join(newip)
@@ -138,7 +136,7 @@ def http_connect(ip, HTTPTRUE, SOCKSTRUE):
         sockscheck(ip, SOCKSTRUE)
     else:
         testhost = "blindsighttf2.com:80"
-        print "[SCANNING]: HTTP Connect on " + str(ip)
+        config.confproto.logger(2, "[SCANNING]: HTTP Connect on " + str(ip))
         ports = [80,81,1075,3128,4480,6588,7856,8000,8080,8081,8090,7033,8085,8095,8100,8105,8110,1039,1050,1080,1098,11055,1200,19991,3332,3382,35233,443,444,4471,4480,5000,5490,5634,5800,63000,63809,65506,6588,6654,6661,6663,6664,6665,6667,6668,7070,7868,808,8085,8082,8118,8888,9000,9090,9988]
 
         for newport in ports:
@@ -192,27 +190,22 @@ def sockscheck(ip, SOCKSTRUE):
                 sch.connect((host, port))
                 if(isSocks4(host, port, sch)):
                     sch.close()
-                    #print "DETECTED SOCKS 4 " + str(newprox)
                     config.confproto.gline_socks(ip, int(time.time()), int(time.time()) + config.DURATION, port, "4")
                     return
                 elif(isSocks5(host, port, sch)):
                     sch.close()
-                    #print "DETECTED SOCKS 5 " + str(newprox)
                     config.confproto.gline_socks(ip, int(time.time()), int(time.time()) + config.DURATION, port, "5")
                     return
                 else:
-                    #print("Not a SOCKS: " + newprox)
                     sch.close()
                     return 0
             except socket.timeout:
-                #print "Timeout: " + newprox
                 sch.close()
                 return 0
             except socket.error:
-                #print "Connection refused: " + newprox
                 sch.close()
                 return 0
-
+        config.confproto.logger(2, "[SCANNING]: SOCKS on " + str(ip))
         for newport in ports:
             socksc = Process(target=getSocksVersion, args=(ip, newport))
             socksc.start()

@@ -31,3 +31,4 @@ database:
 misc:
  gline_duration: 3600
  scan_on_netburst: 0
+ debug_level: 6

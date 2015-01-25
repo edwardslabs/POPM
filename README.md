@@ -47,3 +47,4 @@ The basic config.yaml file can be broken down as follows:
 ####misc
 * gline_duration: How long in seconds the user will be G-lined for
 * scan-on-netburst: This is either a 1 or 0. I.e. true or false. This will determine whether or not POPM will scan all users when initially bursting to the network. (This is not recommended if you have a large network)
+* debug_level: 0 - No debug what-so-ever. 1 - Will display critical errors. 2 - Will include information related to proxy/dnsbl triggers. 3 - Will include information related to POPM's user dictionary. 4 - Will print full data as recieved from the uplink. 5 - Everything. Basically things you can and can't imagine.

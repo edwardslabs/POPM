@@ -29,6 +29,7 @@ try:
         DNSBL_BAN_MSG = conf["proxy"]["dnsbl_ban_message"]
         HTTP_BAN_MSG = conf["proxy"]["http_ban_message"]
         SOCKS_BAN_MSG = conf["proxy"]["socks_ban_message"]
+        DEBUG_LEVEL = conf["misc"]["debug_level"]
 
         # Config checker #
         if not isinstance(DURATION, int):
@@ -53,6 +54,10 @@ try:
 
         if SCAN_ON_BURST not in {0, 1}:
             print "[CONFIG ERROR]: misc:scan_on_netburst must be either a 1 or 0 (true or false respectivly)"
+            sys.exit()
+
+        if DEBUG_LEVEL not in range(0,7):
+            print "[CONFIG ERROR]: misc:debug_level must be between 0 - 6. Consult the README for more information"
             sys.exit()
 
         if not DNSBL_BAN_MSG:

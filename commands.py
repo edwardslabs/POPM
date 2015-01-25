@@ -284,7 +284,7 @@ def die(target, userlist, line):
             if access_level(target, userlist) >= get_die():
                 config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
                 config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
-                print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+                config.confproto.logger(1, "[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
                 sys.exit(0)
             else:
                 config.confproto.notice(target, "You lack access to this command")
@@ -308,7 +308,7 @@ def restart(target, userlist, line):
             if access_level(target, userlist) >= get_die():
                 config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
                 config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
-                print("[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+                config.confproto.logger(1, "[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
                 python = sys.executable
                 os.execl(python, python, * sys.argv)
             else:

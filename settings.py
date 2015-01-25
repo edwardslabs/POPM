@@ -77,7 +77,6 @@ def update_settings(param, newlevel, target):
              config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
              config.pgconn.commit()
              config.cur.execute("SELECT * from settings")
-             #print "Updated settings"
              try:
                  for row in config.cur.fetchall():
                      ENABLE_DNSBL = row[0]
@@ -85,7 +84,7 @@ def update_settings(param, newlevel, target):
                      ENABLE_SOCKS = row[2]
                  config.confproto.notice(target, "%s has been set to %s." % (fancy, fancyonoff))
              except:
-                 print "ERROR! [%s %s]" % (sys.exc_info()[0], sys.exc_info()[0])
+                 config.confproto.logger(1, "ERROR! [%s %s]" % (sys.exc_info()[0], sys.exc_info()[0]))
                  config.confproto.notice(target, "A fatal error has occured changing %s to %s. Please send this message to the developers: %s %s" % (fancy, fancyonoff, sys.exc_info()[0], sys.exc_info()[1]))
     else:
          config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
@@ -95,7 +94,6 @@ def update_settings(param, newlevel, target):
              ENABLE_DNSBL = row[0]
              ENABLE_HTTP = row[1]
              ENABLE_SOCKS = row[2]
-         print "Updated settings"
          config.confproto.notice(target, "%s has been set to %s." % (fancy, newlevel))
 
 def get_set_value(param, target):
@@ -159,9 +157,7 @@ def get_socks_value():
 def isExempt(trueIP):
     config.curauto.execute("SELECT ip FROM exemptions WHERE ip = %s", [trueIP])
     if config.curauto.rowcount > 0:
-        #print "%s is exempt" % (trueIP)
         return True
-    #print "%s is NOT exempt" % (trueIP)
     return False
 
 def checkexpired():
@@ -204,7 +200,6 @@ def exemption_data(target):
     if config.cur.rowcount > 0:
         config.confproto.notice(target, "Exempted IP address:")
         for row in config.cur.fetchall():
-            print row[7]
             if not row[7]:
                 if row[4] is None:
                     config.confproto.notice(target, "ID: %d | IP %s - Added %s by %s set to expire %s for reason %s." % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[5])), row[8]))
