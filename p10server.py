@@ -1,9 +1,10 @@
+import config
+import os
 import sys
 import socket
 import string
 import signal
 import time
-import config
 from proxy import getTrueIP, DNSBL
 from settings import is_settable, get_set, update_settings, get_set_value, get_dnsbl_value, get_http_value, get_socks_value, isExempt, checkexpired
 from commands import privmsg_parser
@@ -59,6 +60,20 @@ class P10Server(object):
         newmessage = config.SOCKS_BAN_MSG.replace("{network}", str(config.NETWORK_NAME)).replace("{port}", str(port)).replace("{version}", str(version))
         config.s.send("%s GL * +*@%s %d %d %d :%s\n" % (config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
         config.main.logger(2, "[WRITE][SOCKS%s_FOUND]: %s GL * +*@%s %d %d %d :%s" % (version, config.SERVER_NUMERIC, ip, config.DURATION, timewo, timew, newmessage))
+
+    def shutdown(self, account, newstring):
+        config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
+        config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+        config.main.logger(1, "[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+        sys.exit(0)
+
+    def restart(self, account, newstring):
+        config.main.delpid()
+        config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
+        config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+        config.main.logger(1, "[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
+        python = sys.executable
+        os.execl(python, python, * sys.argv)
 
     def startbuffer(self):
         signal.signal(signal.SIGINT, self.signal_handler)

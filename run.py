@@ -39,6 +39,9 @@ class StartServer(object):
         else:
             return "%s" % (str(pid))
 
+    def delpid(self):
+        os.remove(self.pidfile)
+
     def is_process_running(self):
         f = open(self.pidfile, "r")
         words = 0

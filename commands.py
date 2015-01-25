@@ -275,21 +275,10 @@ def emote(target, channel, userlist, line):
 def die(target, userlist, line):
     try:
         if line[4]:
-            arlen = len(line)
-            newstring = ""
-            i = 4
-            while i < arlen:
-                if newstring == "":
-                    newstring = line[i]
-                else:
-                    newstring = newstring + " " + line[i]
-                i += 1
             account = get_acc(target, userlist)
+            newstring = " ".join([line[n] for n in range(4, len(line))])
             if access_level(target, userlist) >= get_die():
-                config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
-                config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
-                config.main.logger(1, "[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
-                sys.exit(0)
+                config.confproto.shutdown(account, newstring)
             else:
                 config.confproto.notice(target, "You lack access to this command")
     except IndexError:
@@ -299,22 +288,10 @@ def restart(target, userlist, line):
     import os
     try:
         if line[4]:
-            arlen = len(line)
-            newstring = ""
-            i = 4
-            while i < arlen:
-                if newstring == "":
-                    newstring = line[i]
-                else:
-                    newstring = newstring + " " + line[i]
-                i += 1
             account = get_acc(target, userlist)
+            newstring = " ".join([line[n] for n in range(4, len(line))])
             if access_level(target, userlist) >= get_die():
-                config.s.send("%sAAA Q :%s\n" % (config.SERVER_NUMERIC, newstring))
-                config.s.send("%s SQ %s 0 :[%s (by %s)]\n" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
-                config.main.logger(1, "[WRITE]: %s SQ %s 0 :[%s (by %s)]" % (config.SERVER_NUMERIC, config.SERVER_HOST_NAME, newstring, account))
-                python = sys.executable
-                os.execl(python, python, * sys.argv)
+                config.confproto.restart(account, newstring)
             else:
                 config.confproto.notice(target, "You lack access to this command")
     except IndexError:
