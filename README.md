@@ -39,6 +39,7 @@ The basic config.yaml file can be broken down as follows:
 * prefix: The command prefix to use the bot without /msging it directly
 
 ####database (only works with Postgres at the moment)
+* type: Backend software to use. Currently supports MySQL and Postgres
 * dbname: Name of the database
 * user: Username for the bot to connect
 * host: The host of the database server (usually localhost)

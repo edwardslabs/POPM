@@ -23,9 +23,10 @@ bot:
   prefix: .
 
 database:
-  dbname: 
-  user: 
-  host: 
+  type:
+  dbname:
+  user:
+  host:
   pass:
 
 misc:

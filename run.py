@@ -13,13 +13,31 @@ class StartServer(object):
             self.foreground = False
         self.pidfile = str(os.path.dirname(os.path.realpath(__file__))) + "/popm.pid"
         self.fpid = None
+        self.startTime = time.time()
 
     def is_forked(self):
-        print "In thing"
-        if not self.fpid:
-            return False
+        if not self.foreground:
+            return "Running in foreground"
         else:
-            return True
+            return "Running in background"
+
+    def get_pid(self):
+        f = open(self.pidfile, "r")
+        words = 0
+        for line in f:
+            words += 1
+            try:
+                pid = int(line)
+            except:
+                return "Unknown"
+        if words == 0:
+            return "Unknown"
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return "Unknown"
+        else:
+            return "%s" % (str(pid))
 
     def is_process_running(self):
         f = open(self.pidfile, "r")

@@ -42,16 +42,16 @@ def update_access(user, level, whodidit, userlist):
                 config.confproto.notice(whodidit, "Account %s does not exist." % (user))
             else:
                 config.cur.execute("INSERT INTO users (admin,access,added,bywho) VALUES (%s, %s, %s, %s)", (user, level, epoch, bywho))
-                config.pgconn.commit()
+                config.dbconn.commit()
                 config.confproto.notice(whodidit, "Account %s has been added with access %d." % (user, level))
         else:
             if level < 0:
                 config.cur.execute("DELETE FROM users * WHERE admin = %s", [user])
-                config.pgconn.commit()
+                config.dbconn.commit()
                 config.confproto.notice(whodidit, "Access for account %s has been deleted." % (user))
             else:
                 config.cur.execute("UPDATE users SET access = %s, bywho = %s, added = %s WHERE admin = %s", (level, bywho, epoch, user))
-                config.pgconn.commit()
+                config.dbconn.commit()
                 config.confproto.notice(whodidit, "Account %s has been updated to access %d." % (user, level))
     else:
         config.confproto.notice(whodidit, "Access levels must be an integer.")

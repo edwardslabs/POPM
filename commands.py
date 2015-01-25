@@ -1,9 +1,10 @@
+import datetime
 import time
 import string
 import sys
 import config
 from access import show_access, get_level_req, update_access, get_acc, access_level
-from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say, addexempt, delexempt, get_modify_exempt, get_view_exempt, exemption_data
+from settings import is_settable, get_set, update_settings, get_set_value, get_die, get_say, addexempt, delexempt, get_modify_exempt, get_view_exempt, exemption_data, user_rows, exemption_rows
 from proxy import isIP, isIPv6
 global config
 global sys
@@ -53,6 +54,9 @@ def privmsg_parser(userlist, line):
 
     elif(command == "exempt"):
         exempt(target, userlist, line)
+
+    elif(command == "uptime"):
+        uptime(target, userlist)
 
     elif(not channel):
         command_unknown(target, userlist, line)
@@ -316,6 +320,18 @@ def restart(target, userlist, line):
     except IndexError:
         config.confproto.notice(target, "Insufficient paramaters for RESTART")
 
+def uptime(target, userlist):
+    if access_level(target, userlist) >= get_level_req("access_set"):
+        config.confproto.notice(target, "POPM Information:")
+        config.confproto.notice(target, "Uptime: %s" % (str(datetime.timedelta(seconds=time.time() - config.main.startTime))))
+        config.confproto.notice(target, "PID: %s" % (str(config.main.get_pid())))
+        config.confproto.notice(target, "%s" % (config.main.is_forked()))
+        config.confproto.notice(target, "Database Backend: %s" % (config.dbtype))
+        config.confproto.notice(target, "Users: %s" % (user_rows()))
+        config.confproto.notice(target, "Exemptions: %s" % (exemption_rows()))
+    else:
+        config.confproto.notice(target, "You lack access to this command")
+
 def do_set(target, userlist, line):
     try:
         if line[4]:
@@ -416,6 +432,10 @@ def get_help(target, userlist, line):
                     config.confproto.notice(target, "/msg %s EMOTE <#channel|nick> <text>" % (config.BOT_NAME))
                     config.confproto.notice(target, "Makes %s do the equivelent of /me to the specified nick/channel." % (config.BOT_NAME))
                     config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+                elif line[4].lower() == "uptime":
+                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                    config.confproto.notice(target, "UPTIME will display current running information on POPM.")
+                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
                 elif line[4].lower() == "set":
                     config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                     config.confproto.notice(target, "SET on its own will display the current configuration")
@@ -481,6 +501,7 @@ def get_help(target, userlist, line):
                 config.confproto.notice(target, "Set:            Sets the configuration for POPM")
                 config.confproto.notice(target, "Say:            Makes %s talk" % (config.BOT_NAME))
                 config.confproto.notice(target, "Emote:          Makes %s do the equivelent of /me" % (config.BOT_NAME))
+                config.confproto.notice(target, "Uptime:         Show statistics on POPM.")
                 config.confproto.notice(target, "Restart:        Causes POPM to restart")
                 config.confproto.notice(target, "Die:            Terminates POPM and disconnects from %s" % (config.NETWORK_NAME))
                 config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")

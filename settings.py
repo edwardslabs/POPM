@@ -75,7 +75,7 @@ def update_settings(param, newlevel, target):
                  newlevel = False
                  fancyonoff = "off"
              config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
-             config.pgconn.commit()
+             config.dbconn.commit()
              config.cur.execute("SELECT * from settings")
              try:
                  for row in config.cur.fetchall():
@@ -88,7 +88,7 @@ def update_settings(param, newlevel, target):
                  config.confproto.notice(target, "A fatal error has occured changing %s to %s. Please send this message to the developers: %s %s" % (fancy, fancyonoff, sys.exc_info()[0], sys.exc_info()[1]))
     else:
          config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
-         config.pgconn.commit()
+         config.dbconn.commit()
          config.cur.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")
          for row in config.cur.fetchall():
              ENABLE_DNSBL = row[0]
@@ -168,7 +168,7 @@ def checkexpired():
         for row in config.curauto.fetchall():
             config.confproto.privmsg(config.DEBUG_CHANNEL, "%s's exemption period has expired" % (row[0]))
     config.curauto.execute("UPDATE exemptions SET active = '0' WHERE expires <= %s AND active = '1' AND perma = '0'", [epoch])
-    config.pgconnauto.commit()
+    config.dbconnauto.commit()
 
 def addexempt(target, account, theip, epoch, expire, perma, reason):
     if perma == True:
@@ -178,18 +178,18 @@ def addexempt(target, account, theip, epoch, expire, perma, reason):
     config.cur.execute("SELECT ip FROM exemptions WHERE ip = %s AND active = '1'", [theip])
     if config.cur.rowcount > 0:
         config.cur.execute("UPDATE exemptions SET wholast = %s, lastmodified = %s, expires = %s, perma = %s, reason = %s WHERE ip = %s", (account, epoch, expire, perma, reason, theip))
-        config.pgconn.commit()
+        config.dbconn.commit()
         config.confproto.notice(target, "Updated exemption record for %s" % (theip))
     else:
         config.cur.execute("INSERT INTO exemptions (ip,whenadded,whoadded,expires,perma,reason,active) VALUES (%s, %s, %s, %s, %s, %s, '1')", (theip, epoch, account, expire, perma, reason))
-        config.pgconn.commit()
+        config.dbconn.commit()
         config.confproto.notice(target, "Added %s to the exemption list." % (theip))
 
 def delexempt(target, account, theip):
     config.cur.execute("SELECT ip FROM exemptions WHERE ip = %s AND active = '1'", [theip])
     if config.cur.rowcount > 0:
         config.cur.execute("UPDATE exemptions SET active = '0' WHERE ip = %s", [theip])
-        config.pgconn.commit()
+        config.dbconn.commit()
         config.confproto.notice(target, "Removed %s from the proxy exemption list." % (theip))
     else:
         config.confproto.notice(target, "%s is not an exempted IP address." % (theip))
@@ -212,3 +212,13 @@ def exemption_data(target):
                     config.confproto.notice(target, "ID: %d | IP %s - Perminantly added on %s by %s for reason %s. Last modified by %s on %s" % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], row[8], row[6], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[4]))))
     else:
         config.confproto.notice(target, "There are no active exemptions at this time.")
+
+def user_rows():
+    config.cur.execute("SELECT COUNT(*) FROM users")
+    value = config.cur.fetchone()
+    return value[0]
+
+def exemption_rows():
+    config.cur.execute("SELECT COUNT(*) FROM exemptions")
+    value = config.cur.fetchone()
+    return value[0]
