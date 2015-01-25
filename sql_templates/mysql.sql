@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 25, 2015 at 03:31 PM
+-- Generation Time: Jan 25, 2015 at 04:43 PM
 -- Server version: 5.6.19-0ubuntu0.14.04.1
 -- PHP Version: 5.5.9-1ubuntu4.5
 
@@ -31,9 +31,9 @@ CREATE TABLE IF NOT EXISTS `exemptions` (
   `ip` text NOT NULL,
   `whenadded` int(11) NOT NULL,
   `whoadded` text NOT NULL,
-  `lastmodified` int(11) NOT NULL,
+  `lastmodified` int(11) DEFAULT NULL,
   `expires` int(11) NOT NULL,
-  `wholast` text NOT NULL,
+  `wholast` text,
   `perma` tinyint(1) NOT NULL,
   `reason` text NOT NULL,
   `active` tinyint(1) NOT NULL

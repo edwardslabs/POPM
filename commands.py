@@ -142,15 +142,7 @@ def exempt(target, userlist, line):
                             expire = epoch + newtime
                             try:
                                 if line[7]:
-                                    arlen = len(line)
-                                    i = 7
-                                    newstring = ""
-                                    while i < arlen:
-                                        if newstring == "":
-                                            newstring = line[i]
-                                        else:
-                                            newstring = newstring + " " + line[i]
-                                        i += 1
+                                    newstring = " ".join([line[n] for n in range(7, len(line))])
                             except IndexError:
                                 newstring = "No reason specified"
                             addexempt(target, account, str(theip), epoch, expire, perma, newstring)
@@ -194,36 +186,21 @@ def say(target, channel, userlist, line):
             if line[4]:
                 try:
                     if line[5]:
-                        arlen = len(line)
-                        newstring = ""
                         if channel and line[4][:1] != "#":
                             taruser = line[2]
                             i = 4
                         else:
                             taruser = line[4]
                             i = 5
-                        while i < arlen:
-                            if newstring == "":
-                                newstring = line[i]
-                            else:
-                                newstring = newstring + " " + line[i]
-                            i += 1
+                        newstring = " ".join([line[n] for n in range(i, len(line))])
                         config.confproto.privmsg(taruser, "%s" % (newstring))
                 except IndexError:
-                    arlen = len(line)
-                    newstring = ""
                     if channel and line[4][:1] != "#":
                         taruser = line[2]
-                        i = 4
                     else:
                         config.confproto.notice(target, "Insufficient paramaters for SAY")
                         return
-                    while i < arlen:
-                        if newstring == "":
-                            newstring = line[i]
-                        else:
-                            newstring = newstring + " " + line[i]
-                        i += 1
+                    newstring = " ".join([line[n] for n in range(4, len(line))])
                     config.confproto.privmsg(taruser, "%s" % (newstring))
         except IndexError:
                     config.confproto.notice(target, "Insufficient paramaters for SAY")
@@ -236,36 +213,21 @@ def emote(target, channel, userlist, line):
             if line[4]:
                 try:
                     if line[5]:
-                        arlen = len(line)
-                        newstring = ""
                         if channel and line[4][:1] != "#":
                             taruser = line[2]
                             i = 4
                         else:
                             taruser = line[4]
                             i = 5
-                        while i < arlen:
-                            if newstring == "":
-                                newstring = line[i]
-                            else:
-                                newstring = newstring + " " + line[i]
-                            i += 1
+                        newstring = " ".join([line[n] for n in range(i, len(line))])
                         config.confproto.privmsg(taruser, "\001ACTION %s\001" % (newstring))
                 except IndexError:
-                    arlen = len(line)
-                    newstring = ""
                     if channel and line[4][:1] != "#":
                         taruser = line[2]
-                        i = 4
                     else:
                         config.confproto.notice(target, "Insufficient paramaters for EMOTE")
                         return
-                    while i < arlen:
-                        if newstring == "":
-                            newstring = line[i]
-                        else:
-                            newstring = newstring + " " + line[i]
-                        i += 1
+                    newstring = " ".join([line[n] for n in range(4, len(line))])
                     config.confproto.privmsg(taruser, "\001ACTION %s\001" % (newstring))
         except IndexError:
                     config.confproto.notice(target, "Insufficient paramaters for EMOTE.")
@@ -350,15 +312,7 @@ def version(target, userlist):
 
 def command_unknown(target, userlist, line):
     if access_level(target, userlist) > 0:
-        arlen = len(line)
-        newstring = ""
-        i = 3
-        while i < arlen:
-            if newstring == "":
-                newstring = line[i]
-            else:
-                newstring = newstring + " " + line[i]
-            i += 1
+        newstring = " ".join([line[n] for n in range(3, len(line))])
         config.confproto.notice(target, "Unknown command %s." % (newstring[1:]))
 
 def get_help(target, userlist, line):
