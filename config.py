@@ -1,3 +1,4 @@
+from bot import StartServer
 import psycopg2
 import socket
 import sys
@@ -75,6 +76,8 @@ try:
         else:
             print "[CONFIG ERROR]: server:protocol must be P10Server (more support coming soon(tm))"
             sys.exit()
+
+        main = StartServer()
 
 except IOError:
     print "[CONFIG ERROR]: config.yaml is missing!"

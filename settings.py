@@ -84,7 +84,7 @@ def update_settings(param, newlevel, target):
                      ENABLE_SOCKS = row[2]
                  config.confproto.notice(target, "%s has been set to %s." % (fancy, fancyonoff))
              except:
-                 config.confproto.logger(1, "ERROR! [%s %s]" % (sys.exc_info()[0], sys.exc_info()[0]))
+                 config.main.logger(1, "ERROR! [%s %s]" % (sys.exc_info()[0], sys.exc_info()[0]))
                  config.confproto.notice(target, "A fatal error has occured changing %s to %s. Please send this message to the developers: %s %s" % (fancy, fancyonoff, sys.exc_info()[0], sys.exc_info()[1]))
     else:
          config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
