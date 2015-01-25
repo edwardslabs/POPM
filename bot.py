@@ -1,5 +1,6 @@
 import sys
 import os
+import signal
 import string
 import time
 
@@ -9,6 +10,21 @@ class StartServer(object):
             self.foreground = True
         else:
             self.foreground = False
+        self.pidfile = str(os.path.dirname(os.path.realpath(__file__))) + "/popm.pid"
+
+    def is_process_running(self):
+        f = open(self.pidfile, "r")
+        for line in f:
+            try:
+                pid = int(line)
+            except:
+                return False
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        else:
+            return True
 
     def run(self, argv):
         if '-h' in str(sys.argv):
@@ -24,27 +40,31 @@ class StartServer(object):
             sys.exit()
         elif '-f' in str(sys.argv):
             pid = str(os.getpid())
-            curdir = os.path.dirname(os.path.realpath(__file__))
-            pidfile = curdir + "/popm.pid"
-            if os.path.isfile(pidfile):
-                os.remove(pidfile)
-                file(pidfile, 'w').write(pid)
+            if os.path.isfile(self.pidfile):
+                if self.is_process_running():
+                    sys.exit("POPM is already running.")
+                else:
+                    file(self.pidfile, 'w').write(pid)
             else:
-                file(pidfile, 'w').write(pid)
+                file(self.pidfile, 'w').write(pid)
+            print "Starting POPM...."
+            print "Now running in foreground mode"
             self.startprotocol()
         else:
             fpid = os.fork()
             if fpid != 0:
                 print "Starting POPM...."
-                print "Forking into background under PID %d" % (fpid)
                 spid = str(fpid)
-                curdir = os.path.dirname(os.path.realpath(__file__))
-                pidfile = curdir + "/popm.pid"
-                if os.path.isfile(pidfile):
-                    os.remove(pidfile)
-                    file(pidfile, 'w').write(spid)
+                if os.path.isfile(self.pidfile):
+                    if self.is_process_running():
+                        print "POPM is already running."
+                        os.kill(fpid, signal.SIGTERM)
+                        os.kill(os.getpid(), signal.SIGTERM)
+                    else:
+                        file(self.pidfile, 'w').write(spid)
                 else:
-                    file(pidfile, 'w').write(spid)
+                    file(self.pidfile, 'w').write(spid)
+                print "Forking into background under PID %d" % (fpid)
                 sys.exit()
             self.startprotocol()
 
