@@ -41,6 +41,7 @@ class StartServer(object):
 
     def run(self, argv):
         config.dbverify()
+        config.socketverify()
         if os.path.isfile(self.pidfile) and '-h' not in str(sys.argv):
             self.is_process_running()
         if '-h' in str(sys.argv):

@@ -85,7 +85,15 @@ except KeyError:
     sys.exit()
 
 s=socket.socket()
+validate=socket.socket()
 main = StartServer()
+
+def socketverify():
+    try:
+        validate.connect((HOST, PORT))
+    except Exception, e:
+        sys.exit("Error connecting to uplink server: %s" % (e))
+    validate.close()
 
 def dbverify():
     try:
