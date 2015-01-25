@@ -22,7 +22,8 @@ from settings import (
     get_view_exempt,
     exemption_data,
     user_rows,
-    exemption_rows,
+    exemption_rows_active,
+    exemption_rows_inactive,
     claim_root,
     give_root
 )
@@ -311,7 +312,8 @@ def uptime(target, userlist):
         config.confproto.notice(target, "%s" % (config.main.is_forked()))
         config.confproto.notice(target, "Database Backend: %s" % (config.dbtype))
         config.confproto.notice(target, "Users: %s" % (user_rows()))
-        config.confproto.notice(target, "Exemptions: %s" % (exemption_rows()))
+        config.confproto.notice(target, "Active Exemptions: %s" % (exemption_rows_active()))
+        config.confproto.notice(target, "Inactive Exemptions: %s" % (exemption_rows_inactive()))
     else:
         config.confproto.notice(target, "You lack access to this command")
 

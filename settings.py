@@ -218,8 +218,13 @@ def user_rows():
     value = config.cur.fetchone()
     return value[0]
 
-def exemption_rows():
-    config.cur.execute("SELECT COUNT(*) FROM exemptions")
+def exemption_rows_active():
+    config.cur.execute("SELECT COUNT(*) FROM exemptions WHERE active = '1'")
+    value = config.cur.fetchone()
+    return value[0]
+
+def exemption_rows_inactive():
+    config.cur.execute("SELECT COUNT(*) FROM exemptions WHERE active = '0'")
     value = config.cur.fetchone()
     return value[0]
 
