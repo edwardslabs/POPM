@@ -166,8 +166,7 @@ def exempt(target, userlist, line):
                             epoch = int(time.time())
                             expire = epoch + newtime
                             try:
-                                if line[7]:
-                                    newstring = " ".join([line[n] for n in range(7, len(line))])
+                                newstring = " ".join([line[n] for n in range(7, len(line))])
                             except IndexError:
                                 newstring = "No reason specified"
                             addexempt(target, account, str(theip), epoch, expire, perma, newstring)
