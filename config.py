@@ -82,7 +82,7 @@ try:
             dbtype = "SQLite"
             import sqlite3
         else:
-            sys.exit("[CONFIG ERROR]: Invalid database type selected. Options: Postgres, MySQL")
+            sys.exit("[CONFIG ERROR]: Invalid database type selected. Options: Postgres, MySQL, SQLite")
 
 except IOError:
     sys.exit("[CONFIG ERROR]: config.yaml is missing!")
