@@ -1,4 +1,5 @@
 import config
+import datetime
 global config
 
 def is_settable(param):
@@ -190,7 +191,7 @@ def checkexpired():
             config.curauto.execute("UPDATE exemptions SET active = '0' WHERE expires <= %s AND active = '1' AND perma = '0'", [epoch])
             config.dbconnauto.commit()
 
-def addexempt(target, account, theip, epoch, expire, perma, reason):
+def addexempt(target, account, theip, epoch, expire, perma, reason, newtime):
     if perma == True:
         valueperm = 1
     else:
@@ -200,20 +201,32 @@ def addexempt(target, account, theip, epoch, expire, perma, reason):
         value = config.cur.fetchone()
         if value[0] > 0:
             config.cur.execute("UPDATE exemptions SET wholast = ?, lastmodified = ?, expires = ?, perma = ?, reason = ? WHERE ip = ?", (account, epoch, expire, valueperm, reason, theip))
-            config.confproto.notice(target, "Updated exemption record for %s" % (theip))
+            if valueperm == 1:
+                config.confproto.notice(target, "Updated exemption record for %s to never expire." % (theip))
+            else:
+                config.confproto.notice(target, "Updated exemption record for %s to expire in %s." % (theip, str(datetime.timedelta(seconds=newtime))))
         else:
             config.cur.execute("INSERT INTO exemptions (ip,whenadded,whoadded,expires,perma,reason,active) VALUES (?, ?, ?, ?, ?, ?, '1')", (theip, epoch, account, expire, valueperm, reason))
-            config.confproto.notice(target, "Added %s to the exemption list." % (theip))
+            if valueperm == 1:
+                config.confproto.notice(target, "Perminantly added %s to the exemption list." % (theip))
+            else:
+                config.confproto.notice(target, "Added %s to the exemption list for %s" % (theip, str(datetime.timedelta(seconds=newtime))))
     else:
         config.cur.execute("SELECT ip FROM exemptions WHERE ip = %s AND active = '1'", [theip])
         if config.cur.rowcount > 0:
             config.cur.execute("UPDATE exemptions SET wholast = %s, lastmodified = %s, expires = %s, perma = %s, reason = %s WHERE ip = %s", (account, epoch, expire, perma, reason, theip))
             config.dbconn.commit()
-            config.confproto.notice(target, "Updated exemption record for %s" % (theip))
+            if valueperm == 1:
+                config.confproto.notice(target, "Updated exemption record for %s to never expire." % (theip))
+            else:
+                config.confproto.notice(target, "Updated exemption record for %s to expire in %s." % (theip, str(datetime.timedelta(seconds=newtime))))
         else:
             config.cur.execute("INSERT INTO exemptions (ip,whenadded,whoadded,expires,perma,reason,active) VALUES (%s, %s, %s, %s, %s, %s, '1')", (theip, epoch, account, expire, perma, reason))
             config.dbconn.commit()
-            config.confproto.notice(target, "Added %s to the exemption list." % (theip))
+            if valueperm == 1:
+                config.confproto.notice(target, "Perminantly added %s to the exemption list." % (theip))
+            else:
+                config.confproto.notice(target, "Added %s to the exemption list for %s" % (theip, str(datetime.timedelta(seconds=newtime))))
 
 def delexempt(target, account, theip):
     if config.dbtype == "SQLite":

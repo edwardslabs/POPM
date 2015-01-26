@@ -121,86 +121,86 @@ def get_access(target, userlist, line):
             if my_access(target, userlist) > 0:
                 config.confproto.notice(target, "Account %s has access %s." % (get_acc(target, userlist), access_level(target, userlist)))
 
+def list_exempt(target, userlist, line):
+    if access_level(target, userlist) >= get_view_exempt():
+        exemption_data(target)
+    else:
+        config.confproto.notice(target, "You lack access to this command.")
+
+def del_exempt(target, userlist, line):
+    if access_level(target, userlist) >= get_modify_exempt():
+        try:
+            theip = line[5]
+            account = get_acc(target, userlist)
+            if isIP(theip) or isIPv6(theip):
+                delexempt(target, account, theip)
+            else:
+                config.confproto.notice(target, "You must provide a valid IP address")
+        except IndexError:
+            config.confproto.notice(target, "You must provide a valid IP address")
+    else:
+        config.confproto.notice(target, "You lack access to this command.")
+
+def add_exempt(target, userlist, line):
+    if access_level(target, userlist) >= get_modify_exempt():
+        try:
+            theip = line[5]
+        except IndexError:
+            config.confproto.notice(target, "You must provide an IP address to exempt")
+            return
+        try:
+            newdigit = int(line[6][:-1])
+        except ValueError:
+            try:
+                if int(line[6]) == 0:
+                    newdigit = line[6]
+                else:
+                    config.confproto.notice(target, "Invalid time format")
+                    return
+            except ValueError:
+                config.confproto.notice(target, "Invalid time format")
+                return
+        try:
+            newstring = " ".join([line[n] for n in range(7, len(line))])
+        except IndexError:
+            newstring = "No reason specified"
+        perma = False
+        if line[6][-1] == "s":
+            newtime = newdigit
+        elif line[6][-1] == "m":
+            newtime = newdigit * 60
+        elif line[6][-1] == "h":
+            newtime = newdigit * 3600
+        elif line[6][-1] == "d":
+            newtime = newdigit * 86400
+        elif line[6][-1] == "w":
+            newtime = newdigit * 604800
+        elif line[6][-1] == "M":
+            newtime = newdigit * 2628000
+        elif line[6][-1] == "y":
+            newtime = newdigit * 31536000
+        elif line[6] == "0":
+            newtime = 0
+            perma = True
+        else:
+            config.confproto.notice(target, "Invalid time format")
+            return
+        account = get_acc(target, userlist)
+        epoch = int(time.time())
+        expire = epoch + newtime
+        addexempt(target, account, str(theip), epoch, expire, perma, newstring, newtime)
+    else:
+        config.confproto.notice(target, "You lack access to this command.")
+
 def exempt(target, userlist, line):
     try:
-        if line[4].lower() == "add":
-            if access_level(target, userlist) >= get_modify_exempt():
-                try:
-                    if isIP(line[5]) or isIPv6(line[5]):
-                        theip = line[5]
-                        try:
-                            try:
-                                newdigit = int(line[6][:-1])
-                            except ValueError:
-                                try:
-                                    if int(line[6]) == 0:
-                                        newdigit = line[6]
-                                    else:
-                                        config.confproto.notice(target, "Invalid time format")
-                                        return
-                                except ValueError:
-                                    config.confproto.notice(target, "Invalid time format")
-                                    return
-                            perma = False
-                            if line[6][-1] == "s":
-                                newtime = newdigit
-                            elif line[6][-1] == "m":
-                                newtime = newdigit * 60
-                            elif line[6][-1] == "h":
-                                newtime = newdigit * 3600
-                            elif line[6][-1] == "d":
-                                newtime = newdigit * 86400
-                            elif line[6][-1] == "w":
-                                newtime = newdigit * 604800
-                            elif line[6][-1] == "M":
-                                newtime = newdigit * 2628000
-                            elif line[6][-1] == "y":
-                                newtime = newdigit * 31536000
-                            elif line[6] == "0":
-                                newtime = 0
-                                perma = True
-                            else:
-                                config.confproto.notice(target, "Invalid time format")
-                                return
-                            account = get_acc(target, userlist)
-                            epoch = int(time.time())
-                            expire = epoch + newtime
-                            try:
-                                newstring = " ".join([line[n] for n in range(7, len(line))])
-                            except IndexError:
-                                newstring = "No reason specified"
-                            addexempt(target, account, str(theip), epoch, expire, perma, newstring)
-                        except IndexError:
-                            config.confproto.notice(target, "You must provide time for the exemption to be active for")
-                    else:
-                        config.confproto.notice(target, "You must provide a valid IP address")
-                except IndexError:
-                    config.confproto.notice(target, "You must provide an IP address to exempt")
-            else:
-                config.confproto.notice(target, "You lack access to this command.")
-
-        elif line[4].lower() == "del":
-            if access_level(target, userlist) >= get_modify_exempt():
-                try:
-                    if isIP(line[5]) or isIPv6(line[5]):
-                        theip = line[5]
-                        account = get_acc(target, userlist)
-                        delexempt(target, account, theip)
-                    else:
-                        config.confproto.notice(target, "You must provide a valid IP address")
-                except IndexError:
-                    config.confproto.notice(target, "You must provide a valid IP address")
-            else:
-                config.confproto.notice(target, "You lack access to this command.")
-
-        elif line[4].lower() == "list":
-            if access_level(target, userlist) >= get_view_exempt():
-                exemption_data(target)
-            else:
-                config.confproto.notice(target, "You lack access to this command.")
-        else:
-            config.confproto.notice(target, "Invalid paramater for EXEMPT")
-
+        command = line[4].lower()
+        if command == "list":
+            list_exempt(target, userlist, line)
+        elif command == "del":
+            del_exempt(target, userlist, line)
+        elif command == "add":
+            add_exempt(target, userlist, line)
     except IndexError:
         config.confproto.notice(target, "Not enough paramaters for EXEMPT")
 

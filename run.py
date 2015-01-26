@@ -1,8 +1,8 @@
 import config
 import os
-import sys
 import signal
 import string
+import sys
 import time
 
 class StartServer(object):

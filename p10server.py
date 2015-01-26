@@ -124,6 +124,7 @@ class P10Server(object):
                     config.s.send("%s EA\n" % (config.SERVER_NUMERIC))
                     config.main.logger(5, "[WRITE]: %s EA" % (config.SERVER_NUMERIC))
                     complete = 1
+                    checkexpired()
 
                 # Check for ID collisons #
                 if(line[1] == "S"):
