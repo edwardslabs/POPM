@@ -82,11 +82,10 @@ try:
             sys.exit("[CONFIG ERROR]: Invalid database type selected. Options: Postgres, MySQL")
 
 except IOError:
-    print "[CONFIG ERROR]: config.yaml is missing!"
-    sys.exit()
+    sys.exit("[CONFIG ERROR]: config.yaml is missing!")
+
 except KeyError:
-    print "[CONFIG ERROR]: Your config file is incomplete; Please recopy config.yaml.example and rebase your settings from there."
-    sys.exit()
+    sys.exit("[CONFIG ERROR]: Your config file is incomplete; Please recopy config.yaml.example and rebase your settings from there.")
 
 s=socket.socket()
 validate=socket.socket()
