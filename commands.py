@@ -9,7 +9,8 @@ from access import (
     update_access,
     get_acc,
     access_level,
-    is_authed
+    is_authed,
+    my_access
 )
 from settings import (
     is_settable,
@@ -28,6 +29,7 @@ from settings import (
     give_root
 )
 from proxy import isIP, isIPv6
+import subprocess
 global config
 global sys
 
@@ -83,6 +85,9 @@ def privmsg_parser(userlist, line):
     elif(command == "authme"):
         authme(target, userlist, line)
 
+    elif(command == "version"):
+        version(target, userlist)
+
     elif(not channel):
         command_unknown(target, userlist, line)
 
@@ -96,27 +101,22 @@ def get_threads(target, userlist, line):
         config.confproto.notice(target, "You lack access to this command.")
 
 def get_access(target, userlist, line):
-    from access import my_access
     try:
-        if line[5]:
-            try:
-                access = line[5]
-                access = int(access)
-            except ValueError:
-                config.confproto.notice(target, "Access level must be an integer.")
-                return
-            if my_access(target, userlist) == 1000:
-                if access <= 1000:
-                    update_access(line[4], access, target, userlist)
-                else:
-                    config.confproto.notice(target, "Access must be greater than 1000.")
+        access = int(line[5])
+        if my_access(target, userlist) == 1000:
+            if access <= 1000:
+                update_access(line[4], access, target, userlist)
             else:
-                config.confproto.notice(target, "Access modification can only be done via root (1000 access) users.")
+                config.confproto.notice(target, "Access must be greater than 1000.")
+        else:
+            config.confproto.notice(target, "Access modification can only be done via root (1000 access) users.")
+    except ValueError:
+        config.confproto.notice(target, "Access level must be an integer.")
+        return
     except IndexError:
         try:
-            if line[4]:
-                if my_access(target, userlist) > 0:
-                    show_access(line[4], target)
+            if my_access(target, userlist) > 0:
+                show_access(line[4], target)
         except IndexError:
             if my_access(target, userlist) > 0:
                 config.confproto.notice(target, "Account %s has access %s." % (get_acc(target, userlist), access_level(target, userlist)))
@@ -272,7 +272,6 @@ def die(target, userlist, line):
         config.confproto.notice(target, "Insufficient paramaters for DIE")
 
 def restart(target, userlist, line):
-    import os
     try:
         if line[4]:
             account = get_acc(target, userlist)
@@ -306,6 +305,10 @@ def authme(target, userlist, line):
 
 def uptime(target, userlist):
     if access_level(target, userlist) >= get_level_req("access_set"):
+        try:
+            commit = subprocess.check_output(['git', 'log', '--pretty=format:%h by %ae, %ar', '-1'])
+        except:
+            commit = "unknown"
         config.confproto.notice(target, "POPM Information:")
         config.confproto.notice(target, "Uptime: %s" % (str(datetime.timedelta(seconds=time.time() - config.main.startTime))))
         config.confproto.notice(target, "PID: %s" % (str(config.main.get_pid())))
@@ -314,6 +317,7 @@ def uptime(target, userlist):
         config.confproto.notice(target, "Users: %s" % (user_rows()))
         config.confproto.notice(target, "Active Exemptions: %s" % (exemption_rows_active()))
         config.confproto.notice(target, "Inactive Exemptions: %s" % (exemption_rows_inactive()))
+        config.confproto.notice(target, "POPM version 0.3, latest revision %s." % (commit))
     else:
         config.confproto.notice(target, "You lack access to this command")
 
@@ -352,14 +356,16 @@ def do_set(target, userlist, line):
 
 def version(target, userlist):
     if access_level(target, userlist) >= 0:
-        import subprocess
-        commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
-        config.confproto.notice(target, "POPM authroed ")
+        try:
+            commit = subprocess.check_output(['git', 'log', '--pretty=format:%h by %ae, %ar', '-1'])
+        except:
+            commit = "unknown"
+        config.confproto.notice(target, "POPM version 0.3, latest revision %s." % (commit))
 
 def command_unknown(target, userlist, line):
     if access_level(target, userlist) > 0:
         newstring = " ".join([line[n] for n in range(3, len(line))])
-        config.confproto.notice(target, "Unknown command %s." % (newstring[1:]))
+        config.confproto.notice(target, "Unknown command %s." % (newstring))
 
 def get_help(target, userlist, line):
     if access_level(target, userlist) > 0:
