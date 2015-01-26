@@ -59,7 +59,6 @@ def update_access(user, level, whodidit, userlist):
 def is_authed(numnick, userlist):
     authed = 0
     for i in userlist:
-        account = i.split(":")[0]
         ircnum = i.split(":")[1]
         if ircnum == numnick:
             authed += 1
@@ -77,7 +76,6 @@ def get_acc(numnick, userlist):
 
 def access_level(numnick, userlist):
     authed = 0
-    access = 0
     for i in userlist:
         if numnick == i.split(":")[1]:
             account = i.split(":")[0]
@@ -96,11 +94,9 @@ def access_level(numnick, userlist):
 
 def my_access(numnick, userlist):
     authed = 0
-    access = 0
     for i in userlist:
         if numnick == i.split(":")[1]:
             account = i.split(":")[0]
-            ircnum = i.split(":")[1]
             authed += 1
             break
     if authed == 0:
