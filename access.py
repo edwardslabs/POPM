@@ -46,38 +46,42 @@ def get_level_req(param):
 def update_access(user, level, whodidit, userlist):
     import time
     if isinstance(level, int):
+        epoch = int(time.time())
         bywho = get_acc(whodidit, userlist)
         if config.dbtype == "SQLite":
             config.cur.execute("SELECT COUNT(*) FROM users WHERE admin = ?", [user])
-        else:
-            config.cur.execute("SELECT COUNT(*) FROM users WHERE admin = %s", [user])
-        epoch = int(time.time())
-        value = config.cur.fetchone()
-        if value[0] < 1:
-            if level < 0:
-                config.confproto.notice(whodidit, "Account %s does not exist." % (user))
-            else:
-                if config.dbtype == "SQLite":
+            value = config.cur.fetchone()
+            if value[0] < 1:
+                if level < 0:
+                    config.confproto.notice(whodidit, "Account %s does not exist." % (user))
+                else:
                     config.cur.execute("INSERT INTO users (admin,access,added,bywho) VALUES (?, ?, ?, ?)", (user, level, epoch, bywho))
+                    config.confproto.notice(whodidit, "Account %s has been added with access %d." % (user, level))
+            else:
+                if level < 0:
+                    config.cur.execute("DELETE FROM users WHERE admin = ?", [user])
+                    config.confproto.notice(whodidit, "Access for account %s has been deleted." % (user))
+                else:
+                    config.cur.execute("UPDATE users SET access = ?, bywho = ?, added = ? WHERE admin = ?", (level, bywho, epoch, user))
+                    config.confproto.notice(whodidit, "Account %s has been updated to access %d." % (user, level))
+        else:
+            config.cur.execute("SELECT * FROM users WHERE admin = %s", [user])
+            if config.cur.rowcount < 0:
+                if level < 0:
+                    config.confproto.notice(whodidit, "Account %s does not exist." % (user))
                 else:
                     config.cur.execute("INSERT INTO users (admin,access,added,bywho) VALUES (%s, %s, %s, %s)", (user, level, epoch, bywho))
-                config.dbconn.commit()
-                config.confproto.notice(whodidit, "Account %s has been added with access %d." % (user, level))
-        else:
-            if level < 0:
-                if config.dbtype == "SQLite":
-                    config.cur.execute("DELETE FROM users WHERE admin = ?", [user])
-                else:
-                    config.cur.execute("DELETE FROM users WHERE admin = %s", [user])
-                config.dbconn.commit()
-                config.confproto.notice(whodidit, "Access for account %s has been deleted." % (user))
+                    config.dbconn.commit()
+                    config.confproto.notice(whodidit, "Account %s has been added with access %d." % (user, level))
             else:
-                if config.dbtype == "SQLite":
-                    config.cur.execute("UPDATE users SET access = ?, bywho = ?, added = ? WHERE admin = ?", (level, bywho, epoch, user))
+                if level < 0:
+                    config.cur.execute("DELETE FROM users WHERE admin = %s", [user])
+                    config.dbconn.commit()
+                    config.confproto.notice(whodidit, "Access for account %s has been deleted." % (user))
                 else:
                     config.cur.execute("UPDATE users SET access = %s, bywho = %s, added = %s WHERE admin = %s", (level, bywho, epoch, user))
-                config.dbconn.commit()
-                config.confproto.notice(whodidit, "Account %s has been updated to access %d." % (user, level))
+                    config.dbconn.commit()
+                    config.confproto.notice(whodidit, "Account %s has been updated to access %d." % (user, level))
     else:
         config.confproto.notice(whodidit, "Access levels must be an integer.")
 
