@@ -78,6 +78,9 @@ try:
         elif SQL_ENGINE.lower() == "postgres":
             dbtype = "Postgres"
             import psycopg2
+        elif SQL_ENGINE.lower() == "sqlite":
+            dbtype = "SQLite"
+            import sqlite3
         else:
             sys.exit("[CONFIG ERROR]: Invalid database type selected. Options: Postgres, MySQL")
 
@@ -156,7 +159,39 @@ def dbverify():
             dbconnauto.close()
         except MySQLdb.OperationalError, v:
             sys.exit("A database error has occured: %s" % (v))
-
+    elif dbtype == "SQLite":
+        dbconn = sqlite3.connect('popm.db', isolation_level=None)
+        cur = dbconn.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, whenadded INT NOT NULL, whoadded TEXT NOT NULL, lastmodified INT DEFAULT NULL, expires INT NOT NULL, wholast TEXT DEFAULT NULL, perma BOOLEAN, reason TEXT, active BOOLEAN)")
+        cur.execute("CREATE TABLE IF NOT EXISTS users (ID INTEGER PRIMARY KEY AUTOINCREMENT, admin TEXT NOT NULL, added INT NOT NULL, access INT NOT NULL, bywho TEXT)")
+        cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT(11), access_set INT(11), access_say INT(11), access_emote INT(11), access_joinpart INT(11), view_exempts INT(11), modify_exempts INT(11))")
+        cur.execute("SELECT COUNT(*) FROM settings")
+        value = cur.fetchone()
+        if value[0] == 0:
+            cur.execute("INSERT INTO settings (enable_dnsbl,enable_http,enable_socks,access_die,access_set,access_say,access_emote,access_joinpart,view_exempts,modify_exempts) VALUES ('1', '1', '1', 1000, 1000, 1000, 1000, 1000, 1000, 1000)")
+            print "Initializing settings..."
+        cur.execute("SELECT COUNT(*) FROM users")
+        items = cur.fetchone()
+        if items[0] < 1:
+            newkeypass = ''.join(random.choice(string.digits) for i in range(10))
+            cur.execute("INSERT INTO users VALUES (1, ?, ?, 1000, 'POPM')", (newkeypass, int(time.time())))
+            dbconn.commit()
+            print "Welcome to POPM! Since there are no admins in my database, I have generated a new key for you to use."
+            print "For starters, make sure you are authed with NickServ. Once you have that done, simply run this command:"
+            print "/msg %s AUTHME %s" % (BOT_NAME, newkeypass)
+            print "When you run this, you will be granted root priveleges for accessing settings in POPM via %s. If you" % (BOT_NAME)
+            print "need any assistance, consult the README file found in POPM, or open up an issue on github at"
+            print "https://github.com/blindirc/POPM Hope you enjoy using POPM!"
+        elif items[0] == 1:
+            cur.execute("SELECT admin FROM users")
+            uid = cur.fetchone()
+            try:
+                iuid = int(uid[0])
+                # If the username is an integer, then they haven't changed it. IRC rules, not mine. #
+                print "Welcome to POPM! You have an active activation request to claim root priveleges over POPM"
+                print "Please join the IRC network and /msg %s AUTHME %d" % (BOT_NAME, iuid)
+            except ValueError:
+                pass
 def dbconnect():
     global dbconn
     global cur
@@ -174,3 +209,8 @@ def dbconnect():
         dbconnauto = MySQLdb.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASS, db=DB_NAME)
         dbconnauto.autocommit(True)
         curauto = dbconnauto.cursor()
+    elif dbtype == "SQLite":
+        dbconn = sqlite3.connect('popm.db', isolation_level=None)
+        cur = dbconn.cursor()
+        dbconnauto = sqlite3.connect('popm.db', isolation_level=None)
+        curauto = dbconn.cursor()
