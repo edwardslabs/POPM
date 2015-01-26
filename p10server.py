@@ -163,6 +163,6 @@ class P10Server(object):
                     except IndexError:
                         pass
 
-                # Commands (efficienize me) #
+                # Commands #
                 if(line[1] == "P" and line[2][:1] == "#" or line[1] == "P" and line[2] == "%sAAA" % (config.SERVER_NUMERIC)):
                     privmsg_parser(userlist, line)
