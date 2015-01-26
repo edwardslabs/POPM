@@ -208,78 +208,88 @@ def exempt(target, userlist, line):
 def say(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():
         try:
-            if line[4]:
-                try:
-                    if line[5]:
-                        if channel and line[4][:1] != "#":
-                            taruser = line[2]
-                            i = 4
-                        else:
-                            taruser = line[4]
-                            i = 5
-                        newstring = " ".join([line[n] for n in range(i, len(line))])
-                        config.confproto.privmsg(taruser, "%s" % (newstring))
-                except IndexError:
-                    if channel and line[4][:1] != "#":
-                        taruser = line[2]
-                    else:
-                        config.confproto.notice(target, "Insufficient paramaters for SAY")
-                        return
-                    newstring = " ".join([line[n] for n in range(4, len(line))])
-                    config.confproto.privmsg(taruser, "%s" % (newstring))
+            if channel and line[4][:1] != "#":
+                taruser = line[2]
+                i = 4
+            else:
+                taruser = line[4]
+                i = 5
+            newstring = " ".join([line[n] for n in range(i, len(line))])
+            if not newstring:
+                config.confproto.notice(target, "Insufficient paramaters for EMOTE")
+                return
+            else:
+                config.confproto.privmsg(taruser, "%s" % (newstring))
         except IndexError:
-                    config.confproto.notice(target, "Insufficient paramaters for SAY")
+            if channel:
+                taruser = line[2]
+            else:
+                config.confproto.notice(target, "Insufficient paramaters for EMOTE")
+                return
+            newstring = " ".join([line[n] for n in range(4, len(line))])
+            if not newstring:
+                config.confproto.notice(target, "Insufficient paramaters for EMOTE")
+                return
+            else:
+                config.confproto.privmsg(taruser, "%s" % (newstring))
+        except IndexError:
+            config.confproto.notice(target, "Insufficient paramaters for EMOTE.")
+            return
     else:
         config.confproto.notice(target, "You lack access to this command.")
 
 def emote(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():
         try:
-            if line[4]:
-                try:
-                    if line[5]:
-                        if channel and line[4][:1] != "#":
-                            taruser = line[2]
-                            i = 4
-                        else:
-                            taruser = line[4]
-                            i = 5
-                        newstring = " ".join([line[n] for n in range(i, len(line))])
-                        config.confproto.privmsg(taruser, "\001ACTION %s\001" % (newstring))
-                except IndexError:
-                    if channel and line[4][:1] != "#":
-                        taruser = line[2]
-                    else:
-                        config.confproto.notice(target, "Insufficient paramaters for EMOTE")
-                        return
-                    newstring = " ".join([line[n] for n in range(4, len(line))])
-                    config.confproto.privmsg(taruser, "\001ACTION %s\001" % (newstring))
+            if channel and line[4][:1] != "#":
+                taruser = line[2]
+                i = 4
+            else:
+                taruser = line[4]
+                i = 5
+            newstring = " ".join([line[n] for n in range(i, len(line))])
+            if not newstring:
+                config.confproto.notice(target, "Insufficient paramaters for EMOTE")
+                return
+            else:
+                config.confproto.privmsg(taruser, "\001ACTION %s\001" % (newstring))
         except IndexError:
-                    config.confproto.notice(target, "Insufficient paramaters for EMOTE.")
+            if channel:
+                taruser = line[2]
+            else:
+                config.confproto.notice(target, "Insufficient paramaters for EMOTE")
+                return
+            newstring = " ".join([line[n] for n in range(4, len(line))])
+            if not newstring:
+                config.confproto.notice(target, "Insufficient paramaters for EMOTE")
+                return
+            else:
+                config.confproto.privmsg(taruser, "\001ACTION %s\001" % (newstring))
+        except IndexError:
+            config.confproto.notice(target, "Insufficient paramaters for EMOTE.")
+            return
     else:
         config.confproto.notice(target, "You lack access to this command.")
 
 def die(target, userlist, line):
     try:
-        if line[4]:
-            account = get_acc(target, userlist)
-            newstring = " ".join([line[n] for n in range(4, len(line))])
-            if access_level(target, userlist) >= get_die():
-                config.confproto.shutdown(account, newstring)
-            else:
-                config.confproto.notice(target, "You lack access to this command")
+        account = get_acc(target, userlist)
+        newstring = " ".join([line[n] for n in range(4, len(line))])
+        if access_level(target, userlist) >= get_die():
+            config.confproto.shutdown(account, newstring)
+        else:
+            config.confproto.notice(target, "You lack access to this command")
     except IndexError:
         config.confproto.notice(target, "Insufficient paramaters for DIE")
 
 def restart(target, userlist, line):
     try:
-        if line[4]:
-            account = get_acc(target, userlist)
-            newstring = " ".join([line[n] for n in range(4, len(line))])
-            if access_level(target, userlist) >= get_die():
-                config.confproto.restart(account, newstring)
-            else:
-                config.confproto.notice(target, "You lack access to this command")
+        account = get_acc(target, userlist)
+        newstring = " ".join([line[n] for n in range(4, len(line))])
+        if access_level(target, userlist) >= get_die():
+            config.confproto.restart(account, newstring)
+        else:
+            config.confproto.notice(target, "You lack access to this command")
     except IndexError:
         config.confproto.notice(target, "Insufficient paramaters for RESTART")
 
@@ -323,31 +333,28 @@ def uptime(target, userlist):
 
 def do_set(target, userlist, line):
     try:
-        if line[4]:
-            if access_level(target, userlist) >= get_level_req("access_set"):
-                if is_settable(line[4]) is True:
-                    try:
-                        if line[5]:
-                            try:
-                                newlevel = line[5]
-                                if newlevel.lower() == "on":
-                                    newlevel = 1
-                                elif newlevel.lower() == "off":
-                                    newlevel = 0
-                                else:
-                                    newlevel = int(newlevel)
-                            except ValueError:
-                                config.confproto.notice(target, "Paramater must be an integer.")
-                            if newlevel <= 1000 and newlevel >= 0:
-                                update_settings(line[4], newlevel, target)
-                            else:
-                                config.confproto.notice(target, "Paramater must be an integer between 0 and 1000.")
-                    except IndexError:
-                        get_set_value(line[4], target)
-                else:
-                    config.confproto.notice(target, "Invalid SET option.")
+        if access_level(target, userlist) >= get_level_req("access_set"):
+            if is_settable(line[4]):
+                try:
+                    newlevel = line[5]
+                    if newlevel.lower() == "on":
+                        newlevel = 1
+                    elif newlevel.lower() == "off":
+                        newlevel = 0
+                    else:
+                        newlevel = int(newlevel)
+                    if newlevel <= 1000 and newlevel >= 0:
+                        update_settings(line[4], newlevel, target)
+                    else:
+                        config.confproto.notice(target, "Paramater must be an integer between 0 and 1000.")
+                except ValueError:
+                    config.confproto.notice(target, "Paramater must be an integer.")
+                except IndexError:
+                    get_set_value(line[4], target)
             else:
-                config.confproto.notice(target, "You lack access to this command.")
+                config.confproto.notice(target, "Invalid SET option.")
+        else:
+            config.confproto.notice(target, "You lack access to this command.")
     except IndexError:
         if access_level(target, userlist) >= get_level_req("setters"):
             get_set(target)
@@ -370,109 +377,108 @@ def command_unknown(target, userlist, line):
 def get_help(target, userlist, line):
     if access_level(target, userlist) > 0:
         try:
-            if line[4]:
-                if line[4].lower() == "threads":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "THREADS displays the current number of worker threads by %s." % (config.BOT_NAME))
-                    config.confproto.notice(target, "These threads are spawned when an incoming connection is received")
-                    config.confproto.notice(target, "to check for proxys on the remote host.")
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "access":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "ACCESS is a multi-functional command. Access has the ability to")
-                    config.confproto.notice(target, "check your access with %s, check other's access, add other users to %s" % (config.BOT_NAME, config.BOT_NAME))
-                    config.confproto.notice(target, "and to remove users access to %s. At this time, only root users may" % (config.BOT_NAME))
-                    config.confproto.notice(target, "add or remove other users from %s." % (config.BOT_NAME))
-                    config.confproto.notice(target, "Note: To remove a users access, set their access to -1")
-                    config.confproto.notice(target, "Examples:")
-                    config.confproto.notice(target, "/msg %s ACCESS foobar" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s ACCESS *" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s ACCESS foo 950" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s ACCESS bar -1" % (config.BOT_NAME))
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "die":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "DIE causes %s to quit and POPM to disconnect from %s." % (config.BOT_NAME, config.NETWORK_NAME))
-                    config.confproto.notice(target, "This will completly stop the program and will have to")
-                    config.confproto.notice(target, "be restarted locally. DIE takes arguments for the QUIT message")
-                    config.confproto.notice(target, "and SQUIT reason. Note: When you use DIE, your NickServ account")
-                    config.confproto.notice(target, "name will be attached to the SQUIT message.")
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "restart":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "RESTART causes POPM to restart while rereading its config.")
-                    config.confproto.notice(target, "RESTART takes arguments for the QUIT message and SQUIT reason.")
-                    config.confproto.notice(target, "Note: When you use RESTART, your NickServ account")
-                    config.confproto.notice(target, "name will be attached to the SQUIT message.")
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "say":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s SAY <#channel|nick> <text>" % (config.BOT_NAME))
-                    config.confproto.notice(target, "Makes %s send a message to a specified nick/channel." % (config.BOT_NAME))
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "emote":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s EMOTE <#channel|nick> <text>" % (config.BOT_NAME))
-                    config.confproto.notice(target, "Makes %s do the equivelent of /me to the specified nick/channel." % (config.BOT_NAME))
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "uptime":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "UPTIME will display current running information on POPM.")
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "set":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "SET on its own will display the current configuration")
-                    config.confproto.notice(target, "for %s. Note, that the SET command can only be used by" % (config.BOT_NAME))
-                    config.confproto.notice(target, "users with SET access. SET can also take arguments.")
-                    config.confproto.notice(target, "Below is a list of items you can set in %s" % (config.BOT_NAME))
-                    config.confproto.notice(target, "To change any of the settings, just type")
-                    config.confproto.notice(target, "/msg %s SET paramter value" % (config.BOT_NAME))
-                    config.confproto.notice(target, "")
-                    config.confproto.notice(target, "Examples:")
-                    config.confproto.notice(target, "/msg %s SET DNSBL off" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s SET HTTP on" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s SET SOCKS on" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s SET SETTERS 900" % (config.BOT_NAME))
-                    config.confproto.notice(target, "/msg %s SET DIE 1000" % (config.BOT_NAME))
-                    config.confproto.notice(target, "")
-                    config.confproto.notice(target, "ON/OFF Set Options:")
-                    config.confproto.notice(target, "http")
-                    config.confproto.notice(target, "socks")
-                    config.confproto.notice(target, "dnsbl")
-                    config.confproto.notice(target, "Access Level Set Options:")
-                    config.confproto.notice(target, "die")
-                    config.confproto.notice(target, "restart")
-                    config.confproto.notice(target, "setters")
-                    config.confproto.notice(target, "say")
-                    config.confproto.notice(target, "emote")
-                    config.confproto.notice(target, "exempt_mod")
-                    config.confproto.notice(target, "exempt_view")
-                    config.confproto.notice(target, "")
-                    config.confproto.notice(target, "Note: DIE and RESTART use the same access level.")
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                elif line[4].lower() == "exempt":
-                    config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
-                    config.confproto.notice(target, "EXEMPT is the command to view, add, remove, and modify")
-                    config.confproto.notice(target, "IP addresses that should be exempt from scanning. This")
-                    config.confproto.notice(target, "command can be broken down in to the following:")
-                    config.confproto.notice(target, "Viewing the exemption list:")
-                    config.confproto.notice(target, "/msg %s EXEMPT LIST" % (config.BOT_NAME))
-                    config.confproto.notice(target, "Adding exemptions:")
-                    config.confproto.notice(target, "/msg %s EXEMPT ADD 127.0.0.1 30d Services should not be scanned." % (config.BOT_NAME))
-                    config.confproto.notice(target, "Removing exemptions:")
-                    config.confproto.notice(target, "/msg %s EXEMPT DEL 127.0.0.1" % (config.BOT_NAME))
-                    config.confproto.notice(target, "")
-                    config.confproto.notice(target, "Notes:")
-                    config.confproto.notice(target, "%s will take time arguments such as 1m for 1 minute," % (config.BOT_NAME))
-                    config.confproto.notice(target, "1h for 1 hour, 1M for 1 month, 20d for 20 days, 1y for 1 year,")
-                    config.confproto.notice(target, "etc. To add a perminant exemption, just use a 0. Example:")
-                    config.confproto.notice(target, "/msg %s EXEMPT ADD 127.0.0.1 0 Never scan this address." % (config.BOT_NAME))
-                    config.confproto.notice(target, "It is also important to remember that there are two different")
-                    config.confproto.notice(target, "access levels between viewing exemptions and modifying the list.")
-                    config.confproto.notice(target, "See HELP SET for more details.")
-                    config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
-                else:
-                    config.confproto.notice(target, "%s is an unknown command to me." % (line[4]))
+            if line[4].lower() == "threads":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "THREADS displays the current number of worker threads by %s." % (config.BOT_NAME))
+                config.confproto.notice(target, "These threads are spawned when an incoming connection is received")
+                config.confproto.notice(target, "to check for proxys on the remote host.")
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "access":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "ACCESS is a multi-functional command. Access has the ability to")
+                config.confproto.notice(target, "check your access with %s, check other's access, add other users to %s" % (config.BOT_NAME, config.BOT_NAME))
+                config.confproto.notice(target, "and to remove users access to %s. At this time, only root users may" % (config.BOT_NAME))
+                config.confproto.notice(target, "add or remove other users from %s." % (config.BOT_NAME))
+                config.confproto.notice(target, "Note: To remove a users access, set their access to -1")
+                config.confproto.notice(target, "Examples:")
+                config.confproto.notice(target, "/msg %s ACCESS foobar" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s ACCESS *" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s ACCESS foo 950" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s ACCESS bar -1" % (config.BOT_NAME))
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "die":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "DIE causes %s to quit and POPM to disconnect from %s." % (config.BOT_NAME, config.NETWORK_NAME))
+                config.confproto.notice(target, "This will completly stop the program and will have to")
+                config.confproto.notice(target, "be restarted locally. DIE takes arguments for the QUIT message")
+                config.confproto.notice(target, "and SQUIT reason. Note: When you use DIE, your NickServ account")
+                config.confproto.notice(target, "name will be attached to the SQUIT message.")
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "restart":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "RESTART causes POPM to restart while rereading its config.")
+                config.confproto.notice(target, "RESTART takes arguments for the QUIT message and SQUIT reason.")
+                config.confproto.notice(target, "Note: When you use RESTART, your NickServ account")
+                config.confproto.notice(target, "name will be attached to the SQUIT message.")
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "say":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s SAY <#channel|nick> <text>" % (config.BOT_NAME))
+                config.confproto.notice(target, "Makes %s send a message to a specified nick/channel." % (config.BOT_NAME))
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "emote":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s EMOTE <#channel|nick> <text>" % (config.BOT_NAME))
+                config.confproto.notice(target, "Makes %s do the equivelent of /me to the specified nick/channel." % (config.BOT_NAME))
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "uptime":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "UPTIME will display current running information on POPM.")
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "set":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "SET on its own will display the current configuration")
+                config.confproto.notice(target, "for %s. Note, that the SET command can only be used by" % (config.BOT_NAME))
+                config.confproto.notice(target, "users with SET access. SET can also take arguments.")
+                config.confproto.notice(target, "Below is a list of items you can set in %s" % (config.BOT_NAME))
+                config.confproto.notice(target, "To change any of the settings, just type")
+                config.confproto.notice(target, "/msg %s SET paramter value" % (config.BOT_NAME))
+                config.confproto.notice(target, "")
+                config.confproto.notice(target, "Examples:")
+                config.confproto.notice(target, "/msg %s SET DNSBL off" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s SET HTTP on" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s SET SOCKS on" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s SET SETTERS 900" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s SET DIE 1000" % (config.BOT_NAME))
+                config.confproto.notice(target, "")
+                config.confproto.notice(target, "ON/OFF Set Options:")
+                config.confproto.notice(target, "http")
+                config.confproto.notice(target, "socks")
+                config.confproto.notice(target, "dnsbl")
+                config.confproto.notice(target, "Access Level Set Options:")
+                config.confproto.notice(target, "die")
+                config.confproto.notice(target, "restart")
+                config.confproto.notice(target, "setters")
+                config.confproto.notice(target, "say")
+                config.confproto.notice(target, "emote")
+                config.confproto.notice(target, "exempt_mod")
+                config.confproto.notice(target, "exempt_view")
+                config.confproto.notice(target, "")
+                config.confproto.notice(target, "Note: DIE and RESTART use the same access level.")
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "exempt":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "EXEMPT is the command to view, add, remove, and modify")
+                config.confproto.notice(target, "IP addresses that should be exempt from scanning. This")
+                config.confproto.notice(target, "command can be broken down in to the following:")
+                config.confproto.notice(target, "Viewing the exemption list:")
+                config.confproto.notice(target, "/msg %s EXEMPT LIST" % (config.BOT_NAME))
+                config.confproto.notice(target, "Adding exemptions:")
+                config.confproto.notice(target, "/msg %s EXEMPT ADD 127.0.0.1 30d Services should not be scanned." % (config.BOT_NAME))
+                config.confproto.notice(target, "Removing exemptions:")
+                config.confproto.notice(target, "/msg %s EXEMPT DEL 127.0.0.1" % (config.BOT_NAME))
+                config.confproto.notice(target, "")
+                config.confproto.notice(target, "Notes:")
+                config.confproto.notice(target, "%s will take time arguments such as 1m for 1 minute," % (config.BOT_NAME))
+                config.confproto.notice(target, "1h for 1 hour, 1M for 1 month, 20d for 20 days, 1y for 1 year,")
+                config.confproto.notice(target, "etc. To add a perminant exemption, just use a 0. Example:")
+                config.confproto.notice(target, "/msg %s EXEMPT ADD 127.0.0.1 0 Never scan this address." % (config.BOT_NAME))
+                config.confproto.notice(target, "It is also important to remember that there are two different")
+                config.confproto.notice(target, "access levels between viewing exemptions and modifying the list.")
+                config.confproto.notice(target, "See HELP SET for more details.")
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            else:
+                config.confproto.notice(target, "%s is an unknown command to me." % (line[4]))
         except IndexError:
             if access_level(target, userlist) > 0:
                 config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
