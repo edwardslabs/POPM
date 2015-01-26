@@ -365,7 +365,7 @@ def version(target, userlist):
 def command_unknown(target, userlist, line):
     if access_level(target, userlist) > 0:
         newstring = " ".join([line[n] for n in range(3, len(line))])
-        config.confproto.notice(target, "Unknown command %s." % (newstring))
+        config.confproto.notice(target, "Unknown command %s." % (newstring[1:]))
 
 def get_help(target, userlist, line):
     if access_level(target, userlist) > 0:
