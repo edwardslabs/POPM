@@ -22,16 +22,9 @@ def get_set(target):
     config.cur.execute("SELECT * FROM settings")
     config.confproto.notice(target, "Current configuration settings:")
     for row in config.cur.fetchall():
-        i = 0
-        while i < 3:
-            if row[i] == 0 or row[i] == "False":
-                value = "Off"
-            else:
-                value = "On"
-            i += 1
-        config.confproto.notice(target, "DNSBL Scans:                   %s" % (value))
-        config.confproto.notice(target, "HTTP_CONNECT Scans:     %s" % (value))
-        config.confproto.notice(target, "SOCKS Scans:                   %s" % (value))
+        config.confproto.notice(target, "DNSBL Scans:                   %s" % (row[0]))
+        config.confproto.notice(target, "HTTP_CONNECT Scans:     %s" % (row[1]))
+        config.confproto.notice(target, "SOCKS Scans:                   %s" % (row[2]))
         config.confproto.notice(target, "Die/Restart access:            %s" % (row[3]))
         config.confproto.notice(target, "Setters level:                     %s" % (row[4]))
         config.confproto.notice(target, "Say access:                       %s" % (row[5]))
@@ -88,31 +81,17 @@ def update_settings(param, newlevel, target):
                     newlevel = False
                 fancyonoff = "off"
             if config.dbtype == "SQLite":
-               config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
+                config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
             else:
-               config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
+                config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
             config.dbconn.commit()
-            config.cur.execute("SELECT * from settings")
-            try:
-                for row in config.cur.fetchall():
-                    ENABLE_DNSBL = row[0]
-                    ENABLE_HTTP = row[1]
-                    ENABLE_SOCKS = row[2]
-                config.confproto.notice(target, "%s has been set to %s." % (fancy, fancyonoff))
-            except:
-                config.main.logger(1, "ERROR! [%s %s]" % (sys.exc_info()[0], sys.exc_info()[0]))
-                config.confproto.notice(target, "A fatal error has occured changing %s to %s. Please send this message to the developers: %s %s" % (fancy, fancyonoff, sys.exc_info()[0], sys.exc_info()[1]))
+            config.confproto.notice(target, "%s has been set to %s." % (fancy, fancyonoff))
     else:
         if config.dbtype == "SQLite":
             config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
         else:
             config.cur.execute("UPDATE settings SET %s = %s" % (param, newlevel))
         config.dbconn.commit()
-        config.cur.execute("SELECT enable_dnsbl,enable_http,enable_socks,access_die,access_set FROM settings")
-        for row in config.cur.fetchall():
-            ENABLE_DNSBL = row[0]
-            ENABLE_HTTP = row[1]
-            ENABLE_SOCKS = row[2]
         config.confproto.notice(target, "%s has been set to %s." % (fancy, newlevel))
 
 def get_set_value(param, target):
