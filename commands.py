@@ -143,11 +143,14 @@ def del_exempt(target, userlist, line):
 
 def add_exempt(target, userlist, line):
     if access_level(target, userlist) >= get_modify_exempt():
+        # Check to see if there is an IP address
         try:
             theip = line[5]
         except IndexError:
             config.confproto.notice(target, "You must provide an IP address to exempt")
             return
+
+        # Try to find the time
         try:
             newdigit = int(line[6][:-1])
         except ValueError:
@@ -160,10 +163,13 @@ def add_exempt(target, userlist, line):
             except ValueError:
                 config.confproto.notice(target, "Invalid time format")
                 return
+
+        # Check for a reason
         try:
             newstring = " ".join([line[n] for n in range(7, len(line))])
         except IndexError:
             newstring = "No reason specified"
+
         perma = False
         if line[6][-1] == "s":
             newtime = newdigit
