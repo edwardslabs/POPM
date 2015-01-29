@@ -166,6 +166,9 @@ def dbverify():
         cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, whenadded INT NOT NULL, whoadded TEXT NOT NULL, lastmodified INT DEFAULT NULL, expires INT NOT NULL, wholast TEXT DEFAULT NULL, perma BOOLEAN, reason TEXT, active BOOLEAN)")
         cur.execute("CREATE TABLE IF NOT EXISTS users (ID INTEGER PRIMARY KEY AUTOINCREMENT, admin TEXT NOT NULL, added INT NOT NULL, access INT NOT NULL, bywho TEXT)")
         cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT(11), access_set INT(11), access_say INT(11), access_emote INT(11), access_joinpart INT(11), view_exempts INT(11), modify_exempts INT(11))")
+        cur.execute("CREATE TABLE IF NOT EXISTS banstats (UID INTEGER PRIMARY KEY AUTOINCREMENT, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT NOT NULL)")
+        cur.execute("CREATE TABLE IF NOT EXISTS tempstats (UID INTEGER PRIMARY KEY AUTOINCREMENT, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT NOT NULL)")
+        cur.execute("CREATE TABLE IF NOT EXISTS connstats (ts INTEGER)")
         cur.execute("SELECT COUNT(*) FROM settings")
         value = cur.fetchone()
         if value[0] == 0:
@@ -194,15 +197,25 @@ def dbverify():
             except ValueError:
                 pass
 def dbconnect():
+    # Cursor for user commands
     global dbconn
     global cur
+
+    # Cursor for automatic POPM configurations
     global dbconnauto
     global curauto
+
+    # Stats command so it doesn't trip over auto
+    global dbconnstats
+    global curstats
+
     if dbtype == "Postgres":
         dbconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
         cur = dbconn.cursor()
         dbconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
         curauto = dbconnauto.cursor()
+        dbconnstats = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
+        curstats = dbconnstats.cursor()
     elif dbtype == "MySQL":
         dbconn = MySQLdb.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASS, db=DB_NAME)
         dbconn.autocommit(True)
@@ -210,8 +223,13 @@ def dbconnect():
         dbconnauto = MySQLdb.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASS, db=DB_NAME)
         dbconnauto.autocommit(True)
         curauto = dbconnauto.cursor()
+        dbconnstats = MySQLdb.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASS, db=DB_NAME)
+        dbconnstats.autocommit(True)
+        curstats = dbconnstats.cursor()
     elif dbtype == "SQLite":
         dbconn = sqlite3.connect('popm.db', isolation_level=None)
         cur = dbconn.cursor()
         dbconnauto = sqlite3.connect('popm.db', isolation_level=None)
         curauto = dbconn.cursor()
+        dbconnstats = sqlite3.connect('popm.db', isolation_level=None)
+        curstats = dbconnstats.cursor()

@@ -1,12 +1,23 @@
 import config
 import os
-import sys
-import socket
-import string
 import signal
+import socket
+from stats import routine, store_initial, update_ip
+import string
+import sys
 import time
 from proxy import getTrueIP, DNSBL
-from settings import is_settable, get_set, update_settings, get_set_value, get_dnsbl_value, get_http_value, get_socks_value, isExempt, checkexpired
+from settings import (
+    is_settable,
+    get_set,
+    update_settings,
+    get_set_value,
+    get_dnsbl_value,
+    get_http_value,
+    get_socks_value,
+    isExempt,
+    checkexpired
+)
 from commands import privmsg_parser
 from multiprocessing import Process, Queue
 
@@ -151,15 +162,23 @@ class P10Server(object):
                         if config.SCAN_ON_BURST == 1:
                             trueIP = str(getTrueIP(line[6]))
                             checkexpired()
+                            routine()
+                            epoch = int(time.time())
+                            accessid = store_initial(str(line[6]), str(line[2]), str(line[5]), epoch)
+                            update_ip(trueIP, accessid)
                             if not isExempt(trueIP):
-                                newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
+                                newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value(), accessid))
                                 newip.start()
                         else:
                             if complete == 1:
                                 trueIP = str(getTrueIP(line[6]))
                                 checkexpired()
+                                routine()
+                                epoch = int(time.time())
+                                accessid = store_initial(str(line[6]), str(line[2]), str(line[5]), epoch)
+                                update_ip(trueIP, accessid)
                                 if not isExempt(trueIP):
-                                    newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value()))
+                                    newip = Process(target=DNSBL, args=(trueIP, line[2], get_dnsbl_value(), get_http_value(), get_socks_value(), accessid))
                                     newip.start()
                     except IndexError:
                         pass
