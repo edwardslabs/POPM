@@ -1,8 +1,3 @@
-import datetime
-import time
-import string
-import sys
-import config
 from access import (
     show_access,
     get_level_req,
@@ -12,6 +7,9 @@ from access import (
     is_authed,
     my_access
 )
+import config
+import datetime
+from proxy import isIP, isIPv6
 from settings import (
     is_settable,
     get_set,
@@ -28,8 +26,10 @@ from settings import (
     claim_root,
     give_root
 )
-from proxy import isIP, isIPv6
+import string
 import subprocess
+import sys
+import time
 global config
 global sys
 

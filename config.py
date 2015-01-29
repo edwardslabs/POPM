@@ -151,6 +151,7 @@ def dbverify():
                     print "Welcome to POPM! You have an active activation request to claim root priveleges over POPM"
                     print "Please join the IRC network and /msg %s AUTHME %d" % (BOT_NAME, iuid)
                 except ValueError:
+                    # It's not a cookie we generated #
                     pass
             dbconn.close()
 
