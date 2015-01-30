@@ -65,8 +65,8 @@ def update_access(user, level, whodidit, userlist):
                     config.cur.execute("UPDATE users SET access = ?, bywho = ?, added = ? WHERE admin = ?", (level, bywho, epoch, user))
                     config.confproto.notice(whodidit, "Account %s has been updated to access %d." % (user, level))
         else:
-            config.cur.execute("SELECT * FROM users WHERE admin = %s", [user])
-            if config.cur.rowcount < 0:
+            config.cur.execute("SELECT admin FROM users WHERE admin = %s", [user])
+            if config.cur.rowcount < 1:
                 if level < 0:
                     config.confproto.notice(whodidit, "Account %s does not exist." % (user))
                 else:
