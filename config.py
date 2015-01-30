@@ -115,7 +115,28 @@ def dbverify():
             cur.execute("SELECT * FROM users")
             if cur.rowcount < 1:
                 print "WARNING: POPM does not have a list of admins. It is reccomended to add yourself to the `users` table in PostgreSQL to gain admin priveleges. There will be a startup admin cookie generated in the future to prevent this."
-            dbconn.close()
+            cur.execute("SELECT admin FROM users")
+            if cur.rowcount < 1:
+                newkeypass = ''.join(random.choice(string.digits) for i in range(10))
+                cur.execute("INSERT INTO users VALUES (1, %s, %s, 1000, 'POPM');", (newkeypass, int(time.time())))
+                dbconn.commit()
+                print "Welcome to POPM! Since there are no admins in my database, I have generated a new key for you to use."
+                print "For starters, make sure you are authed with NickServ. Once you have that done, simply run this command:"
+                print "/msg %s AUTHME %s" % (BOT_NAME, newkeypass)
+                print "When you run this, you will be granted root priveleges for accessing settings in POPM via %s. If you" % (BOT_NAME)
+                print "need any assistance, consult the README file found in POPM, or open up an issue on github at"
+                print "https://github.com/blindirc/POPM Hope you enjoy using POPM!"
+            elif cur.rowcount == 1:
+                uid = cur.fetchone()
+                try:
+                    iuid = int(uid[0])
+                    # If the username is an integer, then they haven't changed it. IRC rules, not mine. #
+                    print "Welcome to POPM! You have an active activation request to claim root priveleges over POPM"
+                    print "Please join the IRC network and /msg %s AUTHME %d" % (BOT_NAME, iuid)
+                except ValueError:
+                    # It's not a cookie we generated #
+                    pass
+            dbconn.close
 
             dbconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
             curauto = dbconnauto.cursor()
