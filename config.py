@@ -114,9 +114,6 @@ def dbverify():
                 sys.exit("Your PostgreSQL database does not contain a valid `settings` table. Proxy monitors must either be set to on or off (Boolbean 0/1). Please check your database, or reimport the template .sql file.")
             cur.execute("SELECT * FROM users")
             if cur.rowcount < 1:
-                print "WARNING: POPM does not have a list of admins. It is reccomended to add yourself to the `users` table in PostgreSQL to gain admin priveleges. There will be a startup admin cookie generated in the future to prevent this."
-            cur.execute("SELECT admin FROM users")
-            if cur.rowcount < 1:
                 newkeypass = ''.join(random.choice(string.digits) for i in range(10))
                 cur.execute("INSERT INTO users VALUES (1, %s, %s, 1000, 'POPM');", (newkeypass, int(time.time())))
                 dbconn.commit()
