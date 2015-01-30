@@ -306,8 +306,10 @@ def authme(target, userlist, line):
                 theircookie = int(line[4])
             except ValueError:
                 config.confproto.notice(target, "Incorrect authcookie")
+                return
             except IndexError:
                 config.confproto.notice(target, "You must supply a cookie to identify with")
+                return
             if ourcookie == theircookie:
                 account = get_acc(target, userlist)
                 give_root(account, target)

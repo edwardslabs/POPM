@@ -106,13 +106,19 @@ def dbverify():
         try:
             dbconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
             cur = dbconn.cursor()
+            cur.execute("CREATE TABLE IF NOT EXISTS banstats (ID INT(11) NOT NULL BIGSERIAL PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS tempstats (ID INT(11) NOT NULL BIGSERIAL PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS connstats (ts INT(11) NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID INT(11) NOT NULL BIGSERIAL PRIMARY KEY, ip TEXT NOT NULL, whenadded INT(11) NOT NULL, whoadded TEXT NOT NULL, lastmodified INT(11) DEFAULT NULL, expires INT(11), wholast TEXT DEFAULT NULL, perma BOOLEAN NOT NULL, reason TEXT, active BOOLEAN NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT(11) NOT NULL, access_set INT(11) NOT NULL, access_say INT(11) NOT NULL, access_emote INT(11) NOT NULL, access_joinpart INT(11) NOT NULL, view_exempts INT(11) NOT NULL, modify_exempts INT(11) NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS users (ID INT(11) NOT NULL BIGSERIAL PRIMARY KEY, admin TEXT NOT NULL, added INT(11) NOT NULL, access INT(11) NOT NULL, bywho TEXT NOT NULL)")
             cur.execute("SELECT * FROM settings WHERE access_die >= 0 AND access_die <= 1000 AND access_set >= 0 AND access_set <= 1000 AND access_say >= 0 AND access_say <= 1000 AND access_emote >= 0 AND access_emote <= 1000 AND access_joinpart >= 0 AND access_joinpart <= 1000 AND modify_exempts >= 0 AND modify_exempts <= 1000")
             if cur.rowcount != 1:
                 sys.exit("Your PostgreSQL database does not contain a valid `settings` table. The access roles must be between 0 - 1000. Please check your database, or reimport the template .sql file.")
             cur.execute("SELECT * FROM settings WHERE enable_dnsbl = '1' OR enable_dnsbl = '0' AND enable_http = '1' OR enable_http = '0' AND enable_socks = '1' OR enable_socks = '0'")
             if cur.rowcount != 1:
                 sys.exit("Your PostgreSQL database does not contain a valid `settings` table. Proxy monitors must either be set to on or off (Boolbean 0/1). Please check your database, or reimport the template .sql file.")
-            cur.execute("SELECT * FROM users")
+            cur.execute("SELECT admin FROM users")
             if cur.rowcount < 1:
                 newkeypass = ''.join(random.choice(string.digits) for i in range(10))
                 cur.execute("INSERT INTO users VALUES (1, %s, %s, 1000, 'POPM');", (newkeypass, int(time.time())))
@@ -148,7 +154,7 @@ def dbverify():
             dbconn = MySQLdb.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASS, db=DB_NAME)
             cur = dbconn.cursor()
             cur.execute("CREATE TABLE IF NOT EXISTS banstats (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
-            cur.execute("CREATE TABLE IF NOT EXISTS temptstats (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS tempstats (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS connstats (ts INT(11) NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, ip TEXT NOT NULL, whenadded INT(11) NOT NULL, whoadded TEXT NOT NULL, lastmodified INT(11) DEFAULT NULL, expires INT(11), wholast TEXT DEFAULT NULL, perma BOOLEAN NOT NULL, reason TEXT, active BOOLEAN NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT(11) NOT NULL, access_set INT(11) NOT NULL, access_say INT(11) NOT NULL, access_emote INT(11) NOT NULL, access_joinpart INT(11) NOT NULL, view_exempts INT(11) NOT NULL, modify_exempts INT(11) NOT NULL)")
