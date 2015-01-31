@@ -51,3 +51,9 @@ def routine():
 	else:
 		config.curstats.execute("DELETE FROM tempstats WHERE time - %s >= 10", (epoch))
 		config.curstats.execute("INSERT INTO connstats VALUES (%s)", (epoch))
+
+def do_stats(target):
+	epoch = int(time.time())
+	config.cur.execute("SELECT COUNT(*) FROM connstats")
+	value = config.cur.fetchone()
+	config.confproto.notice(target, "Scanned %s connections." % (value[0]))

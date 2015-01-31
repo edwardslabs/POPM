@@ -10,6 +10,7 @@ from access import (
 import config
 import datetime
 from proxy import isIP, isIPv6
+from stats import do_stats
 from settings import (
     is_settable,
     get_set,
@@ -84,6 +85,9 @@ def privmsg_parser(userlist, line):
 
     elif(command == "authme"):
         authme(target, userlist, line)
+
+    elif(command == "stats"):
+        stats(target, userlist, line)
 
     elif(command == "version"):
         version(target, userlist)
@@ -209,6 +213,10 @@ def exempt(target, userlist, line):
             add_exempt(target, userlist, line)
     except IndexError:
         config.confproto.notice(target, "Not enough paramaters for EXEMPT")
+
+def stats(target, userlist, line):
+    if access_level(target, userlist) >= get_view_exempt():
+        do_stats(target)
 
 def say(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():
