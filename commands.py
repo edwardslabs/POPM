@@ -506,6 +506,7 @@ def get_help(target, userlist, line):
                 config.confproto.notice(target, "Say:            Makes %s talk" % (config.BOT_NAME))
                 config.confproto.notice(target, "Emote:          Makes %s do the equivelent of /me" % (config.BOT_NAME))
                 config.confproto.notice(target, "Uptime:         Show statistics on POPM.")
+                config.confproto.notice(target, "Version:        Shows the latest git version")
                 config.confproto.notice(target, "Restart:        Causes POPM to restart")
                 config.confproto.notice(target, "Die:            Terminates POPM and disconnects from %s" % (config.NETWORK_NAME))
                 config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")

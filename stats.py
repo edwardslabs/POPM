@@ -49,7 +49,7 @@ def routine():
 		config.curstats.execute("DELETE FROM tempstats WHERE time - ? >= 10", (epoch))
 		config.curstats.execute("INSERT INTO connstats VALUES (?)", (epoch))
 	else:
-		config.curstats.execute("DELETE FROM tempstats WHERE time - %s >= 10", (epoch))
+		config.curstats.execute("DELETE FROM tempstats WHERE time - %d >= 10", (epoch))
 		config.curstats.execute("INSERT INTO connstats VALUES (%s)", (epoch))
 
 def do_stats(target):
