@@ -83,8 +83,8 @@ def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE, uniquehash):
             try:
                 answers = dns.resolver.query(newstring,'A')
                 if answers:
-                    config.confproto.gline_dnsbl(ip, int(time.time()), int(time.time()) + config.DURATION, blacklist)
                     update_ban("dnsbl", None, None, None, blacklist, uniquehash)
+                    config.confproto.gline_dnsbl(ip, int(time.time()), int(time.time()) + config.DURATION, blacklist)
                     contrue = 0
                     break
             except dns.resolver.NXDOMAIN:
@@ -107,8 +107,8 @@ def http_connect_threads(ip, port, uniquehash):
             inttime2 = int(time.time())
             data = tcp.recv(1024)
             if data is not False and "HTTP/1.0 200 OK" in data:
-                config.confproto.gline_http(ip, int(time.time()), int(time.time()) + config.DURATION, port)
                 update_ban("http", port, None, "Non-SSL", None, uniquehash)
+                config.confproto.gline_http(ip, int(time.time()), int(time.time()) + config.DURATION, port)
                 tcp.close()
                 break
     except socket.error, v:
@@ -128,8 +128,8 @@ def https_connect_threads(ip, port, uniquehash):
             inttime2 = int(time.time())
             data = ssl_sock.recv(1024)
             if data is not False and "HTTP/1.0 200 OK" in data:
-                config.confproto.gline_http(ip, int(time.time()), int(time.time()) + config.DURATION, port)
                 update_ban("http", port, None, "SSL", None, uniquehash)
+                config.confproto.gline_http(ip, int(time.time()), int(time.time()) + config.DURATION, port)
                 ssl_sock.close()
                 break
     except socket.error, v:
@@ -193,13 +193,13 @@ def sockscheck(ip, SOCKSTRUE, uniquehash):
                 sch.connect((host, port))
                 if(isSocks4(host, port, sch)):
                     sch.close()
-                    config.confproto.gline_socks(ip, int(time.time()), int(time.time()) + config.DURATION, port, "4")
                     update_ban("socks", port, "4", None, None, uniquehash)
+                    config.confproto.gline_socks(ip, int(time.time()), int(time.time()) + config.DURATION, port, "4")
                     return
                 elif(isSocks5(host, port, sch)):
                     sch.close()
-                    config.confproto.gline_socks(ip, int(time.time()), int(time.time()) + config.DURATION, port, "5")
                     update_ban("socks", port, "5", None, None, uniquehash)
+                    config.confproto.gline_socks(ip, int(time.time()), int(time.time()) + config.DURATION, port, "5")
                     return
                 else:
                     sch.close()

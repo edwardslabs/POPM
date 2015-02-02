@@ -10,7 +10,7 @@ from access import (
 import config
 import datetime
 from proxy import isIP, isIPv6
-from stats import do_stats
+from stats import do_stats, do_stats_depth
 from settings import (
     is_settable,
     get_set,
@@ -216,7 +216,53 @@ def exempt(target, userlist, line):
 
 def stats(target, userlist, line):
     if access_level(target, userlist) >= get_view_exempt():
-        do_stats(target)
+        try:
+            try:
+                if line[5].lower() == "extended":
+                    morestats = True
+            except:
+                morestats = False
+            try:
+                statsamnt = int(line[6])
+            except:
+                statsamnt = 0
+            newdigit = int(line[4][:-1])
+            if line[4][-1] == "s":
+                newtime = newdigit
+                proname = "second(s)"
+                do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
+            elif line[4][-1] == "m":
+                newtime = newdigit * 60
+                proname = "minute(s)"
+                do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
+            elif line[4][-1] == "h":
+                newtime = newdigit * 3600
+                proname = "hours(s)"
+                do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
+            elif line[4][-1] == "d":
+                newtime = newdigit * 86400
+                proname = "day(s)"
+                do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
+            elif line[4][-1] == "w":
+                newtime = newdigit * 604800
+                proname = "week(s)"
+                do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
+            elif line[4][-1] == "M":
+                newtime = newdigit * 2628000
+                proname = "month(s)"
+                do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
+            elif line[4][-1] == "y":
+                newtime = newdigit * 31536000
+                proname = "year(s)"
+                do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
+            elif line[4] == "0":
+                do_stats(target)
+            else:
+                do_stats(target)
+        except ValueError:
+            do_stats(target)
+        except IndexError:
+            do_stats(target)
 
 def say(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():

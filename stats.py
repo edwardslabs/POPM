@@ -26,9 +26,10 @@ def update_ip(ip, uhash):
         config.dbconnstats.commit()
 
 def update_ban(typeban, port, socks, http_connect, dnsbl, uhash):
+    print "%s %s %s %s %s %s" % (typeban, port, socks, http_connect, dnsbl, uhash)
     if config.dbtype == "SQLite":
-        config.curstats.execute("INSERT INTO banstats SELECT * FROM tempstats WHERE hash = ?", (uhash))
-        config.curstats.execute("DELETE FROM tempstats WHERE hash = ?", (uhash))
+        config.curstats.execute("INSERT INTO banstats SELECT * FROM tempstats WHERE hash = ?", [uhash])
+        config.curstats.execute("DELETE FROM tempstats WHERE hash = ?", [uhash])
         if typeban == "dnsbl":
             config.curstats.execute("UPDATE banstats SET dnsbl = ? WHERE hash = ?", (dnsbl, uhash))
         elif typeban == "http":
@@ -36,8 +37,8 @@ def update_ban(typeban, port, socks, http_connect, dnsbl, uhash):
         elif typeban == "socks":
             config.curstats.execute("UPDATE banstats SET port = ?, socksv = ? WHERE hash = ?", (port, socks, uhash))
     else:
-        config.curstats.execute("INSERT INTO banstats SELECT * FROM tempstats WHERE hash = %s", (uhash))
-        config.curstats.execute("DELETE FROM tempstats WHERE hash = %s", (uhash))
+        config.curstats.execute("INSERT INTO banstats SELECT * FROM tempstats WHERE hash = %s", [uhash])
+        config.curstats.execute("DELETE FROM tempstats WHERE hash = %s", [uhash])
         if typeban == "dnsbl":
             config.curstats.execute("UPDATE banstats SET dnsbl = %s WHERE hash = %s", (dnsbl, uhash))
         elif typeban == "http":
@@ -57,7 +58,54 @@ def routine():
     config.dbconnstats.commit()
 
 def do_stats(target):
-    epoch = int(time.time())
     config.cur.execute("SELECT COUNT(*) FROM connstats")
     value = config.cur.fetchone()
-    config.confproto.notice(target, "Scanned %s connections." % (value[0]))
+    config.cur.execute("SELECT COUNT(*) FROM banstats")
+    banvalue = config.cur.fetchone()
+    config.confproto.notice(target, "Scanned %s connections and detected %s threats." % (value[0], banvalue[0]))
+
+def do_stats_depth(target, timein, pronoun, window, morestats, statsamnt):
+    epoch = int(time.time())
+    newvalue = epoch - int(timein)
+    if config.dbtype == "SQLite":
+        config.cur.execute("SELECT COUNT(*) FROM connstats WHERE ts >= ?", (newvalue))
+        value = config.cur.fetchone()
+        config.cur.execute("SELECT COUNT(*) FROM banstats WHERE time >= ?", (newvalue))
+        banvalue = config.cur.fetchone()
+        config.confproto.notice(target, "In the past %s %s, I have scanned %s clients and have detected %s threats." % (window, pronoun, value[0], banvalue[0]))
+        if morestats:
+            if statsamnt <= 0:
+                statsamnt = 3
+            config.cur.execute("SELECT * FROM banstats WHERE time >= ? ORDER BY time DESC LIMIT ?", (newvalue, statsamnt))
+            config.confproto.notice(target, "Displaying last %s threats..." % (statsamnt))
+            newint = 1
+            for row in config.cur.fetchall():
+                if row[8] != "NULL":
+                    config.confproto.notice(target, "%d: %s, was banned on %s with ident %s appearing under blacklist %s. Their host was %s which resolved to %s." % (newint, row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[9])), row[4], row[8], row[1], row[2]))
+                elif row[6] != "NULL":
+                    config.confproto.notice(target, "%d: %s, was banned on %s with ident %s. They were under socks%s on port %s. Their host was %s which resolved to %s." % (newint, row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[9])), row[4], row[6], row[5], row[1], row[2]))
+                elif row[7] != "NULL":
+                    config.confproto.notice(target, "%d: %s, was banned on %s with ident %s. They were under a(n) %s http_connect proxy on port %s. Their host was %s which resolved to %s." % (newint, row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[9])), row[4], row[7], row[5], row[1], row[2]))
+                newint += 1
+            config.confproto.notice(target, "End of threats.")
+    else:
+        config.cur.execute("SELECT COUNT(*) FROM connstats WHERE ts >= %s", [newvalue])
+        value = config.cur.fetchone()
+        config.cur.execute("SELECT COUNT(*) FROM banstats WHERE time >= %s", [newvalue])
+        banvalue = config.cur.fetchone()
+        config.confproto.notice(target, "In the past %s %s, I have scanned %s clients and have detected %s threats." % (window, pronoun, value[0], banvalue[0]))
+        if morestats:
+            if statsamnt <= 0:
+                statsamnt = 3
+            config.cur.execute("SELECT * FROM banstats WHERE time >= %s ORDER BY time DESC LIMIT %s", (newvalue, statsamnt))
+            config.confproto.notice(target, "Displaying last %s threats..." % (statsamnt))
+            newint = 1
+            for row in config.cur.fetchall():
+                if row[8] != "NULL":
+                    config.confproto.notice(target, "%d: %s, was banned on %s with ident %s appearing under blacklist %s. Their host was %s which resolved to %s." % (newint, row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[9])), row[4], row[8], row[1], row[2]))
+                elif row[6] != "NULL":
+                    config.confproto.notice(target, "%d: %s, was banned on %s with ident %s. They were under socks%s on port %s. Their host was %s which resolved to %s." % (newint, row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[9])), row[4], row[6], row[5], row[1], row[2]))
+                elif row[7] != "NULL":
+                    config.confproto.notice(target, "%d: %s, was banned on %s with ident %s. They were under a(n) %s http_connect proxy on port %s. Their host was %s which resolved to %s." % (newint, row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[9])), row[4], row[7], row[5], row[1], row[2]))
+                newint += 1
+            config.confproto.notice(target, "End of threats.")
