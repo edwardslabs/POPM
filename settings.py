@@ -303,3 +303,4 @@ def give_root(account, target):
         config.cur.execute("UPDATE users SET admin = %s", [account])
     config.confproto.notice(target, "Thanks! Your account (%s) now has root privieleges to POPM." % (account))
     config.confproto.notice(target, "For assistance, you may /msg %s HELP or consult the README file." % (config.BOT_NAME))
+    config.dbconn.commit()

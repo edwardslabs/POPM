@@ -106,8 +106,8 @@ def dbverify():
         try:
             dbconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
             cur = dbconn.cursor()
-            cur.execute("CREATE TABLE IF NOT EXISTS banstats (ID BIGSERIAL PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT DEFAULT NULL, socksv INT DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT NOT NULL, hash TEXT NOT NULL)")
-            cur.execute("CREATE TABLE IF NOT EXISTS tempstats (ID BIGSERIAL PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT DEFAULT NULL, socksv INT DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT NOT NULL, hash TEXT NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS banstats (ID BIGSERIAL PRIMARY KEY, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT DEFAULT NULL, socksv INT DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT NOT NULL, hash TEXT NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS tempstats (ID BIGSERIAL PRIMARY KEY, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT DEFAULT NULL, socksv INT DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT NOT NULL, hash TEXT NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS connstats (ts INT NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID BIGSERIAL PRIMARY KEY, ip TEXT NOT NULL, whenadded INT NOT NULL, whoadded TEXT NOT NULL, lastmodified INT DEFAULT NULL, expires INT, wholast TEXT DEFAULT NULL, perma BOOLEAN NOT NULL, reason TEXT, active BOOLEAN NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT NOT NULL, access_set INT NOT NULL, access_say INT NOT NULL, access_emote INT NOT NULL, access_joinpart INT NOT NULL, view_exempts INT NOT NULL, modify_exempts INT NOT NULL)")
@@ -157,8 +157,8 @@ def dbverify():
             # MySQL throws warnings for CREATE TABLE IF NOT EXISTS if the table exists... Why do we care exactly? Why would it throw a warning if it's doing what we tell it. #mysqllogic
             dbconn = MySQLdb.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASS, db=DB_NAME)
             cur = dbconn.cursor()
-            cur.execute("CREATE TABLE IF NOT EXISTS banstats (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
-            cur.execute("CREATE TABLE IF NOT EXISTS tempstats (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, host TEXT NOT NULL, ip TEXT NOT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS banstats (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
+            cur.execute("CREATE TABLE IF NOT EXISTS tempstats (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS connstats (ts INT(11) NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, ip TEXT NOT NULL, whenadded INT(11) NOT NULL, whoadded TEXT NOT NULL, lastmodified INT(11) DEFAULT NULL, expires INT(11), wholast TEXT DEFAULT NULL, perma BOOLEAN NOT NULL, reason TEXT, active BOOLEAN NOT NULL)")
             cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT(11) NOT NULL, access_set INT(11) NOT NULL, access_say INT(11) NOT NULL, access_emote INT(11) NOT NULL, access_joinpart INT(11) NOT NULL, view_exempts INT(11) NOT NULL, modify_exempts INT(11) NOT NULL)")
@@ -203,12 +203,12 @@ def dbverify():
     elif dbtype == "SQLite":
         dbconn = sqlite3.connect('popm.db', isolation_level=None)
         cur = dbconn.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, whenadded INT NOT NULL, whoadded TEXT NOT NULL, lastmodified INT DEFAULT NULL, expires INT NOT NULL, wholast TEXT DEFAULT NULL, perma BOOLEAN, reason TEXT, active BOOLEAN)")
-        cur.execute("CREATE TABLE IF NOT EXISTS users (ID INTEGER PRIMARY KEY AUTOINCREMENT, admin TEXT NOT NULL, added INT NOT NULL, access INT NOT NULL, bywho TEXT)")
-        cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT(11), access_set INT(11), access_say INT(11), access_emote INT(11), access_joinpart INT(11), view_exempts INT(11), modify_exempts INT(11))")
         cur.execute("CREATE TABLE IF NOT EXISTS banstats (UID INTEGER PRIMARY KEY AUTOINCREMENT, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT NOT NULL)")
         cur.execute("CREATE TABLE IF NOT EXISTS tempstats (UID INTEGER PRIMARY KEY AUTOINCREMENT, host TEXT NOT NULL, ip TEXT DEFAULT NULL, nick TEXT NOT NULL, ident TEXT NOT NULL, port INT(11) DEFAULT NULL, socksv INT(11) DEFAULT NULL, http_connect TEXT DEFAULT NULL, dnsbl TEXT DEFAULT NULL, time INT(11) NOT NULL, hash TEXT NOT NULL)")
         cur.execute("CREATE TABLE IF NOT EXISTS connstats (ts INTEGER)")
+        cur.execute("CREATE TABLE IF NOT EXISTS exemptions (ID INTEGER PRIMARY KEY AUTOINCREMENT, ip TEXT NOT NULL, whenadded INT NOT NULL, whoadded TEXT NOT NULL, lastmodified INT DEFAULT NULL, expires INT NOT NULL, wholast TEXT DEFAULT NULL, perma BOOLEAN, reason TEXT, active BOOLEAN)")
+        cur.execute("CREATE TABLE IF NOT EXISTS settings (enable_dnsbl BOOLEAN NOT NULL, enable_http BOOLEAN NOT NULL, enable_socks BOOLEAN NOT NULL, access_die INT(11), access_set INT(11), access_say INT(11), access_emote INT(11), access_joinpart INT(11), view_exempts INT(11), modify_exempts INT(11))")
+        cur.execute("CREATE TABLE IF NOT EXISTS users (ID INTEGER PRIMARY KEY AUTOINCREMENT, admin TEXT NOT NULL, added INT NOT NULL, access INT NOT NULL, bywho TEXT)")
         cur.execute("SELECT COUNT(*) FROM settings")
         value = cur.fetchone()
         if value[0] == 0:
