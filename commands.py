@@ -10,7 +10,7 @@ from access import (
 import config
 import datetime
 from proxy import isIP, isIPv6
-from stats import do_stats, do_stats_depth
+from stats import do_stats_depth
 from settings import (
     is_settable,
     get_set,
@@ -216,16 +216,24 @@ def exempt(target, userlist, line):
 
 def stats(target, userlist, line):
     if access_level(target, userlist) >= get_view_exempt():
+        morestats = False
         try:
             try:
-                if line[5].lower() == "extended":
+                if line[5].lower() == "extended" or line[4].lower() == "extended":
                     morestats = True
             except:
-                morestats = False
+                try:
+                    if line[4].lower() == "extended":
+                        morestats = True
+                except:
+                    morestats = False
             try:
                 statsamnt = int(line[6])
             except:
-                statsamnt = 0
+                try:
+                    statsamnt = int(line[5])
+                except:
+                    statsamnt = 0
             newdigit = int(line[4][:-1])
             if line[4][-1] == "s":
                 newtime = newdigit
@@ -256,13 +264,13 @@ def stats(target, userlist, line):
                 proname = "year(s)"
                 do_stats_depth(target, newtime, proname, line[4][:-1], morestats, statsamnt)
             elif line[4] == "0":
-                do_stats(target)
+                do_stats_depth(target, None, None, None, morestats, statsamnt)
             else:
-                do_stats(target)
+                do_stats_depth(target, None, None, None, morestats, statsamnt)
         except ValueError:
-            do_stats(target)
+            do_stats_depth(target, None, None, None, morestats, statsamnt)
         except IndexError:
-            do_stats(target)
+            do_stats_depth(target, None, None, None, morestats, statsamnt)
 
 def say(target, channel, userlist, line):
     if access_level(target, userlist) >= get_say():
@@ -517,6 +525,23 @@ def get_help(target, userlist, line):
                 config.confproto.notice(target, "")
                 config.confproto.notice(target, "Note: DIE and RESTART use the same access level.")
                 config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "stats":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s STATS (time) (extended) (count)" % (config.BOT_NAME))
+                config.confproto.notice(target, "Prints statistics on the network for clients and bans.")
+                config.confproto.notice(target, "On its on by just doing /msg %s STATS, %s will display" % (config.BOT_NAME, config.BOT_NAME))
+                config.confproto.notice(target, "the amount of clients it has scanned as well as the number")
+                config.confproto.notice(target, "of clients it has detected as a threat. By adding a time,")
+                config.confproto.notice(target, "this can be limited down to the amount of information within" % (config.BOT_NAME, config.BOT_NAME))
+                config.confproto.notice(target, "that time frame. So by doing /msg %s STATS 1h, %s" % (config.BOT_NAME, config.BOT_NAME))
+                config.confproto.notice(target, "will display basic information within the past 1 hour.")
+                config.confproto.notice(target, "")
+                config.confproto.notice(target, "When you add on EXTENDED to STATS, %s will display" % (config.BOT_NAME))
+                config.confproto.notice(target, "the types of clients it has detected with more information.")
+                config.confproto.notice(target, "The default amount of clients it will print is 3, however if you")
+                config.confproto.notice(target, "add on a number after EXTENDED, it will change the limit of information")
+                config.confproto.notice(target, "to that number. So if you were to do /msg %s STATS EXTENDED 5," % (config.BOT_NAME))
+                config.confproto.notice(target, "%s would display the last 5 threats detected." % (config.BOT_NAME))
             elif line[4].lower() == "exempt":
                 config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                 config.confproto.notice(target, "EXEMPT is the command to view, add, remove, and modify")
@@ -550,6 +575,7 @@ def get_help(target, userlist, line):
                 config.confproto.notice(target, "Access:         Shows access for accounts")
                 config.confproto.notice(target, "Set:            Sets the configuration for POPM")
                 config.confproto.notice(target, "Say:            Makes %s talk" % (config.BOT_NAME))
+                config.confproto.notice(target, "Stats:          Gives statistics on connections")
                 config.confproto.notice(target, "Emote:          Makes %s do the equivelent of /me" % (config.BOT_NAME))
                 config.confproto.notice(target, "Uptime:         Show statistics on POPM.")
                 config.confproto.notice(target, "Version:        Shows the latest git version")
