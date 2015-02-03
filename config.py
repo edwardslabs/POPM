@@ -2,6 +2,7 @@ import random
 from run import StartServer
 import socket
 import string
+from sqlalchemy import *
 import sys
 import time
 import yaml
@@ -236,6 +237,7 @@ def dbverify():
                 print "Please join the IRC network and /msg %s AUTHME %d" % (BOT_NAME, iuid)
             except ValueError:
                 pass
+
 def dbconnect():
     # Cursor for user commands
     global dbconn
@@ -252,8 +254,10 @@ def dbconnect():
     if dbtype == "Postgres":
         dbconn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
         cur = dbconn.cursor()
+
         dbconnauto = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
         curauto = dbconnauto.cursor()
+
         dbconnstats = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'" % (DB_NAME, DB_USER, DB_HOST, DB_PASS))
         curstats = dbconnstats.cursor()
 
@@ -273,7 +277,9 @@ def dbconnect():
     elif dbtype == "SQLite":
         dbconn = sqlite3.connect('popm.db', isolation_level=None)
         cur = dbconn.cursor()
+
         dbconnauto = sqlite3.connect('popm.db', isolation_level=None)
         curauto = dbconn.cursor()
+
         dbconnstats = sqlite3.connect('popm.db', isolation_level=None)
         curstats = dbconnstats.cursor()

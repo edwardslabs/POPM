@@ -543,6 +543,11 @@ def get_help(target, userlist, line):
                 config.confproto.notice(target, "to that number. So if you were to do /msg %s STATS EXTENDED 5," % (config.BOT_NAME))
                 config.confproto.notice(target, "%s would display the last 5 threats detected." % (config.BOT_NAME))
                 config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
+            elif line[4].lower() == "version":
+                config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
+                config.confproto.notice(target, "/msg %s VERSION" % (config.BOT_NAME))
+                config.confproto.notice(target, "Displays version information from latest commit.")
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
             elif line[4].lower() == "exempt":
                 config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                 config.confproto.notice(target, "EXEMPT is the command to view, add, remove, and modify")
