@@ -532,7 +532,7 @@ def get_help(target, userlist, line):
                 config.confproto.notice(target, "On its on by just doing /msg %s STATS, %s will display" % (config.BOT_NAME, config.BOT_NAME))
                 config.confproto.notice(target, "the amount of clients it has scanned as well as the number")
                 config.confproto.notice(target, "of clients it has detected as a threat. By adding a time,")
-                config.confproto.notice(target, "this can be limited down to the amount of information within" % (config.BOT_NAME, config.BOT_NAME))
+                config.confproto.notice(target, "this can be limited down to the amount of information within")
                 config.confproto.notice(target, "that time frame. So by doing /msg %s STATS 1h, %s" % (config.BOT_NAME, config.BOT_NAME))
                 config.confproto.notice(target, "will display basic information within the past 1 hour.")
                 config.confproto.notice(target, "")
@@ -542,6 +542,7 @@ def get_help(target, userlist, line):
                 config.confproto.notice(target, "add on a number after EXTENDED, it will change the limit of information")
                 config.confproto.notice(target, "to that number. So if you were to do /msg %s STATS EXTENDED 5," % (config.BOT_NAME))
                 config.confproto.notice(target, "%s would display the last 5 threats detected." % (config.BOT_NAME))
+                config.confproto.notice(target, "-=-=-=-=-=-=- End Of Help -=-=-=-=-=-=-")
             elif line[4].lower() == "exempt":
                 config.confproto.notice(target, "-=-=-=-=-=-=- %s Help -=-=-=-=-=-=-" % (config.BOT_NAME))
                 config.confproto.notice(target, "EXEMPT is the command to view, add, remove, and modify")
