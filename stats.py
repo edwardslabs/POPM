@@ -73,7 +73,7 @@ def do_stats_depth(target, timein, pronoun, window, morestats, statsamnt):
             do_stats(target)
             if statsamnt <= 0:
                 statsamnt = 3
-            config.cur.execute("SELECT * FROM banstats ORDER BY time DESC LIMIT ?", (newvalue, statsamnt))
+            config.cur.execute("SELECT * FROM banstats ORDER BY time DESC LIMIT ?", [statsamnt])
             config.confproto.notice(target, "Displaying last %s threat(s)..." % (statsamnt))
             newint = 1
             for row in config.cur.fetchall():
