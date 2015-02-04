@@ -50,8 +50,8 @@ def update_ban(typeban, port, socks, http_connect, dnsbl, uhash):
 def routine():
     epoch = int(time.time())
     if config.dbtype == "SQLite":
-        config.curstats.execute("INSERT INTO connstats VALUES (?)", (epoch))
-        config.curstats.execute("DELETE FROM tempstats WHERE ? - time >= 10", (epoch))
+        config.curstats.execute("INSERT INTO connstats VALUES (?)", [epoch])
+        config.curstats.execute("DELETE FROM tempstats WHERE ? - time >= 10", [epoch])
     else:
         config.curstats.execute("INSERT INTO connstats VALUES (%s)", [epoch])
         config.curstats.execute("DELETE FROM tempstats WHERE %s - time >= 10", [epoch])

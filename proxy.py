@@ -90,6 +90,9 @@ def DNSBL(ip, nick, DNSTRUE, HTTPTRUE, SOCKSTRUE, uniquehash):
             except dns.resolver.NXDOMAIN:
                 contrue += 1
                 continue
+            except dns.resolver.NoNameservers:
+                contrue += 1
+                continue
 
         if contrue == 5:
             http_connect(ip, HTTPTRUE, SOCKSTRUE, uniquehash)
