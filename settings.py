@@ -208,7 +208,7 @@ def addexempt(target, account, theip, epoch, expire, perma, reason, newtime):
         else:
             config.cur.execute("INSERT INTO exemptions (ip,whenadded,whoadded,expires,perma,reason,active) VALUES (?, ?, ?, ?, ?, ?, '1')", (theip, epoch, account, expire, valueperm, reason))
             if valueperm == 1:
-                config.confproto.notice(target, "Perminantly added %s to the exemption list." % (theip))
+                config.confproto.notice(target, "Permanently added %s to the exemption list." % (theip))
             else:
                 config.confproto.notice(target, "Added %s to the exemption list for %s" % (theip, str(datetime.timedelta(seconds=newtime))))
     else:
@@ -224,7 +224,7 @@ def addexempt(target, account, theip, epoch, expire, perma, reason, newtime):
             config.cur.execute("INSERT INTO exemptions (ip,whenadded,whoadded,expires,perma,reason,active) VALUES (%s, %s, %s, %s, %s, %s, '1')", (theip, epoch, account, expire, perma, reason))
             config.dbconn.commit()
             if valueperm == 1:
-                config.confproto.notice(target, "Perminantly added %s to the exemption list." % (theip))
+                config.confproto.notice(target, "Permanently added %s to the exemption list." % (theip))
             else:
                 config.confproto.notice(target, "Added %s to the exemption list for %s" % (theip, str(datetime.timedelta(seconds=newtime))))
 
@@ -261,9 +261,9 @@ def exemption_data(target):
                     config.confproto.notice(target, "ID: %d | IP %s - Added %s by %s set to expire %s for reason %s. Last modified by %s on %s" % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[5])), row[8], row[6], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[4]))))
             else:
                 if row[4] is None:
-                    config.confproto.notice(target, "ID: %d | IP %s - Perminantly added on %s by %s for reason %s." % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], row[8]))
+                    config.confproto.notice(target, "ID: %d | IP %s - Permanently added on %s by %s for reason %s." % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], row[8]))
                 else:
-                    config.confproto.notice(target, "ID: %d | IP %s - Perminantly added on %s by %s for reason %s. Last modified by %s on %s" % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], row[8], row[6], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[4]))))
+                    config.confproto.notice(target, "ID: %d | IP %s - Permanently added on %s by %s for reason %s. Last modified by %s on %s" % (row[0], row[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[2])), row[3], row[8], row[6], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(row[4]))))
     else:
         config.confproto.notice(target, "There are no active exemptions at this time.")
 
